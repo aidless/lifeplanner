@@ -841,6 +841,72 @@ def cmd_doctor(args) -> None:
     print()
 
 
+# ── Q-One：万物量化协议 ─────────────────────────────────────
+def cmd_qone(args) -> None:
+    from .ledger import list_recent, verify_integrity
+    from .qone import ask
+
+    conn = _open()
+
+    if args.qone_action == "verify":
+        rep = verify_integrity(conn)
+        print(f"\n台账校验：{rep['checked']} 条记录，"
+              f"{'全部通过' if rep['ok'] else '发现篡改：' + str(rep['tampered'])}\n")
+        return
+
+    if args.qone_action == "list":
+        items = list_recent(conn, limit=args.limit)
+        if not items:
+            print("\n台账为空。\n")
+            return
+        print(f"\n最近 {len(items)} 条量化决策：\n")
+        for d in items:
+            a = d.get("answer", {})
+            print(f"  #{d['id']} {d['ts'][:16]}　action={a.get('action')}　"
+                  f"confidence={a.get('confidence')}　by={a.get('decided_by')}")
+            print(f"      state：{d['state'][:60]}")
+            if a.get("unknowns"):
+                print(f"      未知项：{a['unknowns'][0][:50]}")
+        print()
+        return
+
+    # ask
+    state = " ".join(args.state).strip()
+    if not state:
+        _err("请提供待量化的问题，例如：lifeplan qone ask 这个项目是否值得继续投入")
+    ans = ask(state, conn, root=args.root)
+    contract = ans.to_contract()
+
+    if args.json:
+        print(json.dumps(contract, ensure_ascii=False, indent=2))
+        return
+
+    print(f"\n量化决策　{state}")
+    print("=" * 60)
+    for qid, v in contract.items():
+        if isinstance(v, dict) and "value" in v:
+            interval = v.get("interval")
+            it = f"　区间 [{interval[0]}, {interval[1]}]" if interval else ""
+            print(f"  {qid:<8} {v['value']} {v['unit']}{it}")
+        elif isinstance(v, dict) and "level" in v:
+            print(f"  {qid:<8} {v['level']}（{v['rule'][:40]}）")
+    print(f"\n  裁决 action      {contract['action']}")
+    print(f"  置信度           {contract['confidence']}（裁决者 {contract['decided_by']}）")
+    print(f"\n  证据（{len(contract['evidence'])} 项，均含 sha256）：")
+    for e in contract["evidence"]:
+        print(f"    · [{e['kind']}] {e['detail']} = {e['value']}")
+    if contract["assumptions"]:
+        print("\n  假设：")
+        for a in contract["assumptions"]:
+            print(f"    · {a}")
+    if contract["unknowns"]:
+        print("\n  未知项：")
+        for u in contract["unknowns"]:
+            print(f"    · {u}")
+    print(f"\n  下一步测量：{contract['next_measurement']}")
+    print("\n  （已写入溯源账本：lifeplan qone list / verify）\n")
+
+
 def cmd_policy(args) -> None:
     from .policy import TIER_LABEL, load_policy, policy_path
 
@@ -1139,6 +1205,20 @@ def build_parser() -> argparse.ArgumentParser:
     c3.add_argument("id", type=int)
     c3.add_argument("--confirm-token", default=None)
     c3.set_defaults(func=cmd_act)
+
+    # ── Q-One ──
+    sp = sub.add_parser("qone", help="Q-One：万物量化协议（测量→证据→计算→裁决→台账）")
+    gq = sp.add_subparsers(dest="qone_action", required=True)
+    q1 = gq.add_parser("ask", help="对一个 state 做完整量化决策")
+    q1.add_argument("state", nargs="+")
+    q1.add_argument("--root", default=None, help="证据扫描根目录（默认家目录）")
+    q1.add_argument("--json", action="store_true")
+    q1.set_defaults(func=cmd_qone)
+    q2 = gq.add_parser("list", help="查看量化决策台账")
+    q2.add_argument("--limit", type=int, default=10)
+    q2.set_defaults(func=cmd_qone)
+    q3 = gq.add_parser("verify", help="校验台账完整性（重算哈希）")
+    q3.set_defaults(func=cmd_qone)
 
     # ── 策略 ──
     sp = sub.add_parser("policy", help="查看权限策略与分级含义")

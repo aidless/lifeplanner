@@ -533,3 +533,64 @@ Python 3.10 / 3.13 双版本跑测试 + 端到端冒烟。
 | 0.7–0.8 | 3 | 0.70 | 0.33 | −0.37 |
 
 「说到五成把握的事，一件都没做到」——这条信息在原来的总分里完全看不见。
+
+---
+
+## Q-One：万物量化协议
+
+把「万事万物皆可量化」落成**可复算的测量协议**，而不是随意打分：
+
+> 对任何对象，先定义可观测变量、单位或尺度、参考系和证据，
+> 再给出数值、区间、置信度、未知项和下一步测量。
+
+```bash
+lifeplan qone ask "这个项目是否值得继续投入？"     # 完整量化决策
+lifeplan qone ask "..." --json                     # 机器可读契约
+lifeplan qone list                                 # 决策台账
+lifeplan qone verify                               # 台账哈希校验
+```
+
+### 六层架构
+
+| 层 | 实现 | 职责 |
+|---|---|---|
+| 量化编译器 | `qone.qcompile()` | 问题 → 测量计划（v1 垂直域规则，v2 上 LLM） |
+| 证据 Agent | `qone._evidence()` | git / 数据库 / 文件，每项带 sha256 |
+| 计算引擎 | `calc.py` | **所有数值在此产生，模型永不碰算术** |
+| 决策模型 | `_decide()` | Laya/Jev 风格 choice/noul，不可用则文档化规则 |
+| 不确定性层 | `_uncertainty()` | 自助法区间、置信度、**拒答策略** |
+| 溯源账本 | `ledger.py` | 每次决策完整留痕 + 哈希可验伪 |
+
+### 输出契约
+
+```json
+{
+  "投入强度": {"value": 731, "interval": null, "unit": "commits_per_30d"},
+  "价值总评": {"value": 55.0, "interval": [5.0, 100.0], "unit": "score_0_100"},
+  "risk": {"level": "高", "rule": "价值总评<35→极高；35-60→高；…"},
+  "action": "need_data",
+  "confidence": 0.7,
+  "evidence": [{"kind": "git", "detail": "...", "value": 731, "sha256": "..."}],
+  "assumptions": ["投入强度以 git 提交为代理，不等于价值创造"],
+  "unknowns": ["校准样本不足（n=0），自评准确度只能当方向参考"],
+  "next_measurement": "…",
+  "decided_by": "abstain"
+}
+```
+
+### 三条设计红线（均有测试）
+
+1. **模型不碰算术**：表达式求值走 AST 白名单，没有 `eval`、没有属性访问
+   （`tests/test_qone.py::TestCalcSafety`，`__import__`/`os.system`/`lambda` 全部拒绝）
+2. **没有证据就不裁决**：无可核验观测、无校准样本、无指标目标时，
+   只允许 `need_data`——实测教训：空库上 731 次 git 提交曾把价值分撑到 55、
+   裁决 `pivot`，**活动量冒充了证据**
+3. **台账可验伪**：sha256 覆盖规范化 JSON，改一个字节就能被发现
+   （`lifeplan qone verify`）
+
+### 当前 Scope（诚实版）
+
+v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并记入 unknown——
+诚实的 Scope 好过虚假的通用。v2 路线：LLM 编译器拆解 → 积累决策数据 →
+训练自己的 Q-One 决策模型（choice/score/noul → measure/forecast/rank）→
+评测体系（数值误差、Brier、ECE、拒答质量、证据完整性、可复现性）。

@@ -237,11 +237,15 @@ class SystemOneAdapter(BaseAdapter):
             from huggingface_hub import snapshot_download
             from laya import Agent
 
-            path = snapshot_download(
-                os.environ.get(
-                    "LIFEPLAN_S1_REPO", "convaiinnovations/laya-multilingual"
-                )
+            repo = os.environ.get(
+                "LIFEPLAN_S1_REPO", "convaiinnovations/laya-multilingual"
             )
+            try:
+                # 优先本地缓存：status() 已确认过缓存存在；
+                # 在线拉取在内网会走代理并失败（实测 ProxyError）。
+                path = snapshot_download(repo, local_files_only=True)
+            except Exception:
+                path = snapshot_download(repo)
             self._agent = Agent(path)
         return self._agent
 
