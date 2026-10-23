@@ -1,0 +1,193 @@
+# 人生量化本体 v1（life_ontology.yaml）
+#
+# 纪律（来自 QUANTIFICATION_PRINCIPLES）：
+#   · 每个指标必须九字段齐全，缺一即未定义
+#   · baseline / target 由**主人**填写并冻结时间戳，系统不预填
+#   · 标 [草案] 的条目是系统起草的候选定义，等主人审定后才生效
+#   · 意义与价值域只登记不量化（原则 6）
+#
+# 九字段：name / operational_definition / unit_or_scale / data_source /
+#         cadence / computation / uncertainty / applicable_boundary / possible_misleading
+
+version: 1
+updated: 2026-10-22
+domains:
+
+  - domain: 健康
+    weight: 0.2                     # [草案] 权重属价值排序，最终由主人定
+    metrics:
+      - name: 日均睡眠时长
+        operational_definition: "可穿戴或手机睡眠记录 App 的每日入睡-起床时长中位数（非均值，抗单晚异常）"
+        unit_or_scale: "小时，保留 1 位小数"
+        data_source: "睡眠记录 App 导出 CSV（tier2）"
+        cadence: daily
+        computation: "近 7 天中位数；与基线 7.0h 的偏差进 maintain 公式"
+        uncertainty: "设备误差 ±0.5h；单周样本不覆盖周末模式"
+        applicable_boundary: "仅描述睡眠量，不描述睡眠质量"
+        possible_misleading: "为刷高数值而早睡但睡眠质量下降——与精力域交叉验证"
+        baseline: null               # ← 主人填
+        target: null                 # ← 主人填
+        direction: maintain
+        tolerance: 0.8
+      - name: 每周中高强度运动次数
+        operational_definition: "单次 ≥30 分钟、心率达最大心率 60% 以上的运动次数"
+        unit_or_scale: "次/周"
+        data_source: "运动记录（App 或手记，tier1-2）"
+        cadence: weekly
+        computation: "每周计数"
+        uncertainty: "强度判定依赖设备或自述"
+        applicable_boundary: "不覆盖低强度日常活动"
+        possible_misleading: "为凑次数而缩短单次时长——应同时记录总时长"
+
+  - domain: 时间
+    weight: 0.15
+    metrics:
+      - name: 深度工作小时数
+        operational_definition: "无通知干扰、单次 ≥50 分钟的专注时段累计时长（番茄/屏幕使用时间交叉验证）"
+        unit_or_scale: "小时/周"
+        data_source: "屏幕使用时间 + 自记（tier2）"
+        cadence: weekly
+        computation: "Σ 合格时段"
+        uncertainty: "干扰判定为主观标记"
+        applicable_boundary: "不含必要的协作沟通时间"
+        possible_misleading: "把低价值重复劳动计时长——需与创造域产出交叉验证"
+
+  - domain: 精力
+    weight: 0.1
+    metrics:
+      - name: 主观精力评分
+        operational_definition: "每日 21 点自评 1-10 分量表（固定锚点：1=耗尽，10=充沛）"
+        unit_or_scale: "1-10 分量表"
+        data_source: "自评（tier1）"
+        cadence: daily
+        computation: "周均值 + 最低三日均值（低谷比均值更信息丰富）"
+        uncertainty: "自评偏差；当日情绪污染"
+        applicable_boundary: "主观量表，只与自己的历史比"
+        possible_misleading: "量表锚点漂移——每季度用同一场景重校锚点"
+
+  - domain: 金钱
+    weight: 0.1
+    metrics:
+      - name: 储蓄月数覆盖
+        operational_definition: "流动性资产 ÷ 近三月月均支出"
+        unit_or_scale: "月"
+        data_source: "银行/记账 App（tier3 可核验）"
+        cadence: monthly
+        computation: "资产/支出均值"
+        uncertainty: "支出结构变化的月份需重算"
+        applicable_boundary: "不含投资收益与固定资产"
+        possible_misleading: "为刷高而压制必要支出（健康/学习）——与健康域联动审计"
+
+  - domain: 学习
+    weight: 0.15
+    note: "学习质量禁止只用时长定义（见 metric_dictionary.md 的分解）"
+    metrics:
+      - name: 论文精读产出
+        operational_definition: "完成精读的论文数，且每篇产出 ≥500 字批注（含：问题/方法/局限/可迁移点）"
+        unit_or_scale: "篇/周"
+        data_source: "批注文件（tier2，可哈希）"
+        cadence: weekly
+        computation: "计数（有批注才算）"
+        uncertainty: "批注深度未评"
+        applicable_boundary: "不衡量理解质量本身——理解用迁移指标捕捉"
+        possible_misleading: "为凑篇数写浅批注——抽查 20% 做深度评级"
+      - name: 知识迁移次数
+        operational_definition: "把所学用于新场景并产生可验证结果的次数（代码合并/实验结论/他人采用）"
+        unit_or_scale: "次/月"
+        data_source: "git 合并记录 + 实验结果（tier3）"
+        cadence: monthly
+        computation: "计数"
+        uncertainty: "归因困难（结果可能由多因素造成）"
+        applicable_boundary: "长周期指标，单月波动大"
+        possible_misleading: "把重复应用记为迁移——须是新场景"
+
+  - domain: 工作
+    weight: 0.2
+    metrics:
+      - name: 有效投递数
+        operational_definition: "针对目标岗位定制过简历与求职信的投递数（群发不计）"
+        unit_or_scale: "份/周"
+        data_source: "投递台账 CSV（tier2）"
+        cadence: weekly
+        computation: "计数"
+        uncertainty: "「定制」程度主观"
+        applicable_boundary: "活动量指标，非成果指标"
+        possible_misleading: "为刷数降低单份质量——与面试转化率联动审计"
+
+  - domain: 创造
+    weight: 0.15
+    metrics:
+      - name: 可核验产出数
+        operational_definition: "产生外部可验证痕迹的创造活动数（合并 PR / 公榜提交 / 预印本 / 部署服务）"
+        unit_or_scale: "件/月"
+        data_source: "git / arXiv / 部署 URL（tier3）"
+        cadence: monthly
+        computation: "计数"
+        uncertainty: "「可核验」边界需事先约定"
+        applicable_boundary: "不计未完成工作"
+        possible_misleading: "为凑数拆分提交——看单件规模分布"
+
+  - domain: 关系
+    weight: 0.1
+    note: "关系质量不可量化（见不可量化登记）；此处只测过程频次作代理"
+    metrics:
+      - name: 深度对话次数
+        operational_definition: "≥30 分钟、双方都有自我暴露的对话次数（事后双记录）"
+        unit_or_scale: "次/周"
+        data_source: "自记（tier1）"
+        cadence: weekly
+        computation: "计数"
+        uncertainty: "「深度」判定主观且事后记忆有偏"
+        applicable_boundary: "代理指标，不可解读为关系质量"
+        possible_misleading: "为凑数安排对话反而消耗关系——与主观感受交叉验证"
+
+  - domain: 环境
+    weight: 0.05
+    metrics:
+      - name: 专注环境受损次数
+        operational_definition: "因噪音/打断/设备故障导致深度工作中断的次数"
+        unit_or_scale: "次/周（decrease 型）"
+        data_source: "自记 + 屏幕时间异常（tier1-2）"
+        cadence: weekly
+        computation: "计数"
+        uncertainty: "归因主观"
+        applicable_boundary: "仅描述环境，不描述个人"
+        possible_misleading: "把自身分心归因于环境"
+
+  - domain: 风险
+    weight: 0.05
+    metrics:
+      - name: 单点依赖度
+        operational_definition: "收入/产出/健康任一维度对单一来源的依赖比例"
+        unit_or_scale: "0-1 比例"
+        data_source: "台账（tier2）"
+        cadence: monthly
+        computation: "最大来源 ÷ 总量"
+        uncertainty: "来源归类主观"
+        applicable_boundary: "结构指标，非绩效指标"
+        possible_misleading: "过度分散导致无一深入——需与深度指标平衡"
+
+  - domain: 意义与价值
+    quantified: false                # 原则 6：只登记，不量化
+    note: "此域只接受偏好声明与价值排序文本，不产生任何参与计算的数值"
+    declarations: []                 # ← 由主人书写，系统存档
+
+# ── 跨域审计规则（audit.py 已实现四条，此处为声明） ──────────────
+cross_domain_audits:
+  - id: proxy_capture
+    rule: "代理指标 ≥0.75 而主指标 <0.4 时告警"
+  - id: baseline_drift
+    rule: "观测后才修改 baseline/target 时告警（high）"
+  - id: evidence_inflation
+    rule: "证据等级与实际引用材料不符时告警"
+  - id: value_confidence_gap
+    rule: "最高价值领域且置信度 <0.6 时告警（留，但必须被看见）"
+
+# ── 不可量化登记（诚实边界） ─────────────────────────────────
+unquantifiable:
+  - name: 职业长期意义感
+    reason: "依赖未来自我叙事与外部反馈，当前频次无法代表"
+  - name: 亲密关系质量
+    reason: "互动次数与质量无单调关系"
+  - name: 认知能力真实增长
+    reason: "产出活动量 ≠ 能力存量"
