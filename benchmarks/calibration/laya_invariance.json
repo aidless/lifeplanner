@@ -1,0 +1,7 @@
+{
+  "test": "laya_option_order_invariance",
+  "status": "blocked_memory",
+  "rlimit_as_bytes": 4294967296,
+  "error": "Cannot allocate memory (os error 12)",
+  "note": "沙箱进程地址空间受限导致 safetensors mmap 失败；测试未执行，不产生任何通过/失败结论。"
+}
