@@ -135,12 +135,20 @@ class TestQOneContract(unittest.TestCase):
             self.assertIn(key, c)
         for e in c["evidence"]:
             self.assertIn("sha256", e, "每条证据都必须带内容哈希")
-        self.assertIn(c["action"], ("continue", "pivot", "stop", "need_data"))
+        self.assertIn(c["action"], ("continue", "pivot", "pause", "stop",
+                                    "collect_more_evidence"))
+        self.assertIn("evidence_sufficiency", c)
+        self.assertIn(c["evidence_sufficiency"],
+                      ("sufficient", "medium", "insufficient", "unknown"))
+        # 三置信度分离（蓝图 §7）
+        for k in ("model", "evidence", "forecast"):
+            self.assertIn(k, c["confidence"])
 
     def test_empty_db_asks_for_data_not_a_number(self):
         """空库（无观测/无校准样本）时不许硬给分数——这是协议的底线。"""
         ans = ask("这个项目是否值得继续投入", self.conn, root="/tmp")
-        self.assertEqual(ans.action, "need_data")
+        self.assertEqual(ans.action, "collect_more_evidence")
+        self.assertEqual(ans.evidence_sufficiency, "insufficient")
         self.assertTrue(ans.unknowns)
 
     def test_persisted_to_ledger(self):

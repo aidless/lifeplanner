@@ -30,9 +30,9 @@ class TestSchemas(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.measurement = json.loads(
-            (ROOT / "agent" / "measurement_contract.schema.json").read_text(encoding="utf-8"))
+            (ROOT / "ontology" / "measurement_contract.schema.json").read_text(encoding="utf-8"))
         cls.evidence = json.loads(
-            (ROOT / "agent" / "EVIDENCE_SCHEMA.json").read_text(encoding="utf-8"))
+            (ROOT / "ontology" / "evidence_schema.json").read_text(encoding="utf-8"))
         cls.decision = json.loads(
             (ROOT / "agent" / "DECISION_SCHEMA.json").read_text(encoding="utf-8"))
         cls.validator = jsonschema.Draft202012Validator
@@ -65,10 +65,11 @@ class TestQOneOutputConforms(unittest.TestCase):
         doc = {
             "decision_id": c.get("decision_id", "decision_20260101_000000"),
             "question": ans.state,
-            "options": ["continue", "pivot", "pause", "stop", "need_data"],
+            "options": ["continue", "pivot", "pause", "stop", "collect_more_evidence"],
             "selected": c["action"],
             "confidence": c["confidence"],
             "confidence_type": c["confidence_type"],
+            "evidence_sufficiency": c["evidence_sufficiency"],
             "decided_by": c["decided_by"],
             "reason": c.get("next_measurement") or "",
         }
@@ -85,7 +86,7 @@ class TestQOneOutputConforms(unittest.TestCase):
                     if isinstance(v, dict) and "value" in v and "unit" in v]
         self.assertTrue(measured, "量化输出里必须有 measure 结果")
         schema = json.loads(
-            (ROOT / "agent" / "measurement_contract.schema.json").read_text(encoding="utf-8"))
+            (ROOT / "ontology" / "measurement_contract.schema.json").read_text(encoding="utf-8"))
         result_schema = schema["definitions"]["measurement_result"]
         for v in measured:
             doc = {
@@ -103,7 +104,7 @@ class TestQOneOutputConforms(unittest.TestCase):
         ans = ask("这个项目是否值得继续投入", self.conn, root="/tmp")
         c = ans.to_contract()
         schema = json.loads(
-            (ROOT / "agent" / "EVIDENCE_SCHEMA.json").read_text(encoding="utf-8"))
+            (ROOT / "ontology" / "evidence_schema.json").read_text(encoding="utf-8"))
         for e in c["evidence"]:
             doc = {
                 "evidence_id": f"ev_{e['kind']}",

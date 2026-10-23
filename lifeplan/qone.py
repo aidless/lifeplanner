@@ -25,7 +25,8 @@ from . import calc
 from .ledger import DecisionRecord, record, sha256_of
 
 # ── 问题类型（与 Laya/Jev 的 choice/score/noul 对齐，measure 为本系统扩展）──
-QTYPES = ("measure", "score", "choice", "noul")
+QTYPES = ("measure", "score", "choice", "noul", "forecast", "rank", "abstain")
+# v1 已实现：measure/score/choice/noul；forecast/rank/abstain 协议已预留（阶段八）
 
 VERTICAL = "project_investment"      # v1 唯一覆盖的垂直域
 VERTICAL_HINTS = ("项目", "投入", "继续", "值得", "project", "invest", "continue")
@@ -55,7 +56,11 @@ class QOneAnswer:
     decided_by: str                     # "laya" | "rules" | "abstain"
     decision_id: str = ""               # 决策协议 §8.3
     probabilities: dict = field(default_factory=dict)   # 各选项概率
-    confidence_type: str = "calibrated"  # calibrated | heuristic | none
+    confidence_model: float | None = None     # 模型置信度（决策层给出）
+    confidence_evidence: float | None = None  # 证据置信度（输入数据可靠度）
+    confidence_forecast: float | None = None  # 预测置信度（未来不确定性）
+    evidence_sufficiency: str = "unknown"     # sufficient | medium | insufficient | unknown
+    confidence_type: str = "heuristic"        # calibrated | heuristic | none
 
     def to_contract(self) -> dict:
         """对外 JSON 契约：value/interval/confidence/action/evidence/assumptions/unknowns。"""
@@ -66,10 +71,19 @@ class QOneAnswer:
         for qid, v in self.scores.items():
             out[qid] = {"level": v["level"], "rule": v["rule"]}
         out["action"] = self.action
-        out["confidence"] = round(self.confidence, 3)
+        # 三种置信度分离（蓝图 §7：不得压缩成一个未经解释的数字）
+        out["confidence"] = {
+            "model": (None if self.confidence_model is None
+                      else round(self.confidence_model, 3)),
+            "evidence": (None if self.confidence_evidence is None
+                         else round(self.confidence_evidence, 3)),
+            "forecast": (None if self.confidence_forecast is None
+                         else round(self.confidence_forecast, 3)),
+        }
         out["confidence_type"] = self.confidence_type
         if self.probabilities:
             out["probabilities"] = self.probabilities
+        out["evidence_sufficiency"] = self.evidence_sufficiency
         out["evidence"] = self.evidence
         out["assumptions"] = self.assumptions
         out["unknowns"] = self.unknowns
@@ -107,7 +121,7 @@ def qcompile(state: str) -> tuple[str, list[Question], list[str]]:
         Question("action", "choice",
                  criteria={"continue": "继续投入", "pivot": "调整方向",
                            "pause": "暂停观望", "stop": "停止",
-                           "need_data": "先补充证据"},
+                           "collect_more_evidence": "先补充证据"},
                  instructions="应该对这个项目做什么"),
         Question("证据充分性", "noul",
                  instructions="现有证据是否足以支撑上面的裁决"),
@@ -255,8 +269,8 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
         and (signals.get("goals_with_metrics") or 0) == 0
     )
     if no_real_evidence:
-        return "need_data", 0.8, "abstain", [
-            "无可核验观测、无校准样本、无指标目标——按拒答策略只裁决 need_data"
+        return "collect_more_evidence", 0.8, "abstain", [
+            "无可核验观测、无校准样本、无指标目标——按拒答策略只裁决 collect_more_evidence"
         ], {}
 
     value = values.get("价值总评", {}).get("value", 0)
@@ -265,7 +279,7 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
 
     # 规则基线（透明、可复算；也是模型不可用时的兜底）
     if unknowns_structural:
-        rule_action, rule_conf = "need_data", 0.7
+        rule_action, rule_conf = "collect_more_evidence", 0.7
     elif value >= 60:
         rule_action, rule_conf = "continue", 0.6
     elif value >= 35:
@@ -298,14 +312,14 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
                                     "pivot": "方向需调整",
                                     "pause": "暂缓观察",
                                     "stop": "投入产出不成立",
-                                    "need_data": "关键证据缺失，无法判断"}},
+                                    "collect_more_evidence": "关键证据缺失，无法判断"}},
         }
         res = s1._get_agent().predict(state_text, questions)
         ans = res.get("answers", {}).get("action", {})
         action = ans.get("choice")
         conf = ans.get("confidence", 0.0) or 0.0
         probs = ans.get("probabilities") or {}
-        if action in ("continue", "pivot", "pause", "stop", "need_data") and conf >= 0.5:
+        if action in ("continue", "pivot", "pause", "stop", "collect_more_evidence") and conf >= 0.5:
             return action, conf, "laya", [], probs
         return rule_action, rule_conf, "rules", ["Laya 置信不足，降级为规则"], probs
     except Exception as exc:
@@ -336,9 +350,21 @@ def ask(state: str, conn, as_of: str | None = None, root=None,
     unknowns = unknowns + unknowns2
     action, conf, decided_by, notes, probs = _decide(state, signals, values)
 
-    # 总置信度 = 裁决置信度 × 证据覆盖度（证据缺一半，置信度就打对折）
+    # 三种置信度分离（蓝图 §7）
     coverage = sum(1 for e in evidence if e.get("value") is not None) / max(len(evidence), 1)
-    confidence = calc.clamp(conf * (0.5 + 0.5 * coverage))
+    conf_evidence = calc.clamp(0.5 + 0.5 * coverage)
+    conf_forecast = (None if signals.get("calibration_n", 0) < 5
+                     else calc.clamp(1.0 - abs(signals.get("calibration_overconfidence") or 0)))
+    # 证据充分性用**实质判据**，不是字段填充率：
+    # 实测教训——0 条观测曾被 3/4 的字段填充率算成 medium（虚高）。
+    substantive_gaps = (
+        (signals.get("verified_obs_30d") or 0) == 0
+        or (signals.get("calibration_n") or 0) < 5
+        or (signals.get("goals_with_metrics") or 0) == 0
+    )
+    evidence_sufficiency = ("insufficient" if substantive_gaps
+                            else "medium" if coverage < 1.0 else "sufficient")
+    composite = calc.clamp(conf * (0.5 + 0.5 * coverage))
 
     ans = QOneAnswer(
         state=state,
@@ -348,9 +374,13 @@ def ask(state: str, conn, as_of: str | None = None, root=None,
         values=values,
         scores={"risk": {"level": _risk_level(values), "rule": "价值总评<35→极高；35-60→高；60-80→中；≥80→低"}},
         action=action,
-        confidence=confidence,
+        confidence=composite,
         decision_id=f"decision_{datetime.now():%Y%m%d_%H%M%S}",
         probabilities=probs,
+        confidence_model=conf,
+        confidence_evidence=conf_evidence,
+        confidence_forecast=conf_forecast,
+        evidence_sufficiency=evidence_sufficiency,
         confidence_type=("calibrated" if signals.get("calibration_n", 0) >= 20
                          else "heuristic"),
         evidence=evidence,

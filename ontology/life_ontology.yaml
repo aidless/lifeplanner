@@ -9,7 +9,7 @@
 # 九字段：name / operational_definition / unit_or_scale / data_source /
 #         cadence / computation / uncertainty / applicable_boundary / possible_misleading
 
-version: 2
+version: 3
 updated: 2026-10-22
 
 # ── 核心实体（文档 §9.1） ─────────────────────────────────
@@ -212,6 +212,48 @@ domains:
         uncertainty: "自评偏差；词汇覆盖有限"
         applicable_boundary: "描述分布，不描述强度"
         possible_misleading: "为'看起来积极'而选词——允许全部负向词，不设目标值"
+
+  - domain: 自主性
+    weight: 0.05
+    note: "蓝图 §6.1 新增域：选择空间与可退出性"
+    metrics:
+      - name: 可退出选项数
+        operational_definition: "当前承诺中，可在 30 天内无重大损失退出的数量占比"
+        unit_or_scale: "0-1 比例"
+        data_source: "承诺台账（tier2）"
+        cadence: monthly
+        computation: "可退出承诺数 / 总承诺数"
+        uncertainty: "「重大损失」判定主观"
+        applicable_boundary: "结构指标，不衡量退出后的状态"
+        possible_misleading: "为保退出性而拒绝所有长期承诺——与深度指标平衡"
+
+  - domain: 安全
+    weight: 0.1
+    note: "蓝图 §6.1 的「安全」= 健康/财务/法律/数据风险（原「风险」域并入此）"
+    metrics:
+      - name: 风险敞口事件数
+        operational_definition: "本月新出现的健康/财务/法律/数据风险事件数（有记录为证）"
+        unit_or_scale: "件/月（decrease 型）"
+        data_source: "事件记录（tier2）"
+        cadence: monthly
+        computation: "计数"
+        uncertainty: "未识别风险不计入（幸存者偏差）"
+        applicable_boundary: "只计已发生，不计潜在"
+        possible_misleading: "为降数字而少记录——与健康域交叉验证"
+
+  - domain: 选择空间
+    weight: 0.05
+    note: "蓝图 §6.1 新增域：未来可选择路径的数量与质量"
+    metrics:
+      - name: 开放路径数
+        operational_definition: "6 个月内可启动且门槛可达的方向数（每个有书面依据）"
+        unit_or_scale: "个"
+        data_source: "方向清单（tier2）"
+        cadence: quarterly
+        computation: "计数（需书面依据）"
+        uncertainty: "「可达」判定主观"
+        applicable_boundary: "数量不等于质量；质量用主观备注"
+        possible_misleading: "列一堆不认真的方向充数——要求每个方向写门槛与依据"
 
   - domain: 意义与价值
     quantified: false                # 原则 6：只登记，不量化

@@ -4,7 +4,8 @@
   "title": "Q-One Decision Protocol",
   "description": "决策协议（文档 §8.3）。结构化决策的唯一出口格式；Laya/Jev 的 choice 输出必须映射到本协议。",
   "type": "object",
-  "required": ["decision_id", "question", "options", "selected", "confidence", "confidence_type"],
+  "required": ["decision_id", "question", "options", "selected", "confidence",
+               "confidence_type", "evidence_sufficiency"],
   "properties": {
     "decision_id": {"type": "string", "pattern": "^decision_[0-9]{8}_[0-9]{6}$"},
     "question": {"type": "string"},
@@ -17,9 +18,22 @@
     "human_review_required": {"type": "boolean", "default": false,
                               "description": "true = 该决策不得自动转化为行动"},
     "reason": {"type": "string"},
-    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "confidence": {
+      "type": "object",
+      "description": "三种置信度分离（蓝图 §7），不得压缩成单一未解释数字",
+      "required": ["model", "evidence", "forecast"],
+      "properties": {
+        "model": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "evidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "forecast": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      }
+    },
     "confidence_type": {"type": "string", "enum": ["calibrated", "heuristic", "none"]},
+    "evidence_sufficiency": {"type": "string",
+                             "enum": ["sufficient", "medium", "insufficient", "unknown"]},
     "decided_by": {"type": "string", "enum": ["laya", "rules", "abstain", "llm", "human"]},
+    "question_type": {"type": "string",
+                      "enum": ["choice", "score", "noul", "measure", "forecast", "rank", "abstain"]},
     "evidence_ids": {"type": "array", "items": {"type": "string"}},
     "action_tier": {"type": "integer", "minimum": 0, "maximum": 4,
                     "description": "L0 只建议 · L1 草稿 · L2 可逆执行 · L3 需人工确认 · L4 禁止"}

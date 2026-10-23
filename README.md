@@ -568,8 +568,10 @@ lifeplan qone verify                               # 台账哈希校验
   "投入强度": {"value": 731, "interval": null, "unit": "commits_per_30d"},
   "价值总评": {"value": 55.0, "interval": [5.0, 100.0], "unit": "score_0_100"},
   "risk": {"level": "高", "rule": "价值总评<35→极高；35-60→高；…"},
-  "action": "need_data",
-  "confidence": 0.7,
+  "action": "collect_more_evidence",
+  "confidence": {"model": 0.8, "evidence": 0.75, "forecast": null},
+  "confidence_type": "heuristic",
+  "evidence_sufficiency": "insufficient",
   "evidence": [{"kind": "git", "detail": "...", "value": 731, "sha256": "..."}],
   "assumptions": ["投入强度以 git 提交为代理，不等于价值创造"],
   "unknowns": ["校准样本不足（n=0），自评准确度只能当方向参考"],
@@ -591,13 +593,14 @@ lifeplan qone verify                               # 台账哈希校验
 ### 仓库结构（文档 §15）
 
 ```
-charter/     总纲 · 原则 · 研究问题 · 术语 · 非目标 · 隐私
+charter/     总纲 · 量化原则 · 研究问题 · 术语 · 非目标 · 隐私
 literature/  论文矩阵 · 综述 · claim 台账 · 能力地图 · BibTeX
-ontology/    人生本体 · 指标词典
-agent/       架构 · 协议 · 路由 · 三份 Schema
-benchmarks/  评测规范（七级基线 + 消融）
-life-system/ 失败日志 · 试点案例
-model/ reports/   （阶段八/十预留）
+ontology/    人生本体(15域) · 指标词典 · 测量契约 Schema · 证据 Schema
+agent/       架构 · 协议 · 模型路由 · 行动权限 · 决策 Schema
+benchmarks/  评测规范 · baseline_results/ · calibration/ · ablations/ · failure_cases/
+model/       训练计划 · 数据卡 · checkpoints/（阶段八）
+life-system/ 失败日志 · 试点 · 人生系统v1 · 日常/周/月复盘 · 决策日志规范
+reports/     研究报告 · 评测报告 · 失败分析 · 后续工作
 ```
 
 ### 当前 Scope（诚实版）
