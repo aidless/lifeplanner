@@ -245,7 +245,7 @@ def seed_all(conn) -> None:
          (today - timedelta(days=21)).isoformat()),
         (g6, (today - timedelta(days=21)).isoformat(), 0.70, "未来一周运动 4 次", 0,
          (today - timedelta(days=21)).isoformat()),
-        (g1, (today - timedelta(days=14)).isoformat(), 0.65, "14 天内投递 8 份", 1,
+        (g1, (today - timedelta(days=14)).isoformat(), 0.65, "14 天内投递 15 份", 1,
          (today - timedelta(days=14)).isoformat()),
         (g1, (today - timedelta(days=14)).isoformat(), 0.55, "14 天内进入面试", 0,
          (today - timedelta(days=14)).isoformat()),
