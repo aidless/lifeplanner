@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS goals (
     start_date  TEXT    NOT NULL,
     end_date    TEXT    NOT NULL,
     weight      REAL    NOT NULL DEFAULT 1.0,
-    status      TEXT    NOT NULL DEFAULT 'active',   -- active | done | dropped
+    status      TEXT    NOT NULL DEFAULT 'active',   -- active | paused | done | dropped
     created_at  TEXT    NOT NULL
 );
 

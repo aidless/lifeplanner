@@ -43,15 +43,34 @@ GOAL_METRIC_HINTS = [
     (("写作", "产出", "文章"), [
         ("新稿发布数", "篇", "increase", "monthly", 3),
     ]),
+    (("开源", "社区贡献", "PR"), [
+        ("合并的外部 PR 数", "个", "increase", "monthly", 3),
+        ("有效提交数", "次", "increase", "weekly", 2),
+    ]),
 ]
 
+# 外部锚点：只收录可公开查证、且与目标直接相关的参考值。
+# 用途仅是给 baseline/target 一个参照，**不是系统建议的答案**。
+# 每条都带来源与日期；过期的锚点必须删除或更新。
+EXTERNAL_ANCHORS = {
+    "公榜最佳分": ("铜牌线约 0.451（Kaggle 公榜公开阈值，2026-10 快照）", ),
+    "有效投递数": ("参考类：你自己历史周投递量（本库无观测时留空，不猜）", ),
+    "面试转化率": ("参考类：面试数 ÷ 定制投递数；行业基准不可直接搬用", ),
+    "成稿提交数": ("参考类：你的既有成稿储备（库存文件数，可数）", ),
+    "合并的外部 PR 数": ("参考类：过去 12 个月你向他人项目提过几次 PR、合并几次", ),
+    "有效提交数": ("参考类：你既有的周提交量（本库无观测时留空）", ),
+}
+
+# (statement, horizon, 结算标准, 目标匹配关键词)
+# ⚠ horizon 必须是**未来日期**——2027-03-31 是当前规划期，不是 2026（今天已 2026-10-23）
 BIG_DECISIONS = [
     ("CASMI26 公榜最佳分进入铜牌区（≥0.451）", "2026-12-14",
-     "结算标准：Kaggle 公榜页面（tier3）"),
-    ("拿到上海或杭州的 LLM/Agent 评测岗 offer（≥1 个）", "2026-06-30",
-     "结算标准：offer 邮件或合同文本（tier3）"),
-    ("完成 TMLR 首投（≥1 篇，approval-gates 或 agent-effort）", "2026-03-31",
-     "结算标准：投稿系统确认邮件（tier3）"),
+     "结算标准：Kaggle 公榜页面（tier3）", ("奖牌", "竞赛", "CASMI", "最佳分")),
+    ("完成 TMLR 首投（≥1 篇，approval-gates 或 agent-effort）", "2027-03-31",
+     "结算标准：投稿系统确认邮件（tier3）", ("TMLR", "投稿", "首投")),
+    ("向他人项目提交的 PR 至少 1 个被合并（非自己项目）", "2027-03-31",
+     "结算标准：目标仓库的 PR 页面显示 merged（tier3）",
+     ("开源", "社区贡献", "社区")),
 ]
 
 
@@ -89,6 +108,9 @@ def generate_template(conn) -> str:
         )
         lines.append(f"# ── 目标 #{g['id']}：{title}")
         for name, unit, direction, cadence, tier in hints:
+            if name in EXTERNAL_ANCHORS:
+                for anchor in EXTERNAL_ANCHORS[name]:
+                    lines.append(f"# 外部锚点：{anchor}")
             lines += [
                 "[[metrics]]",
                 f"goal_id = {g['id']}",
@@ -103,17 +125,27 @@ def generate_template(conn) -> str:
             ]
 
     lines.append("# ── 三条大决策（你的概率，系统不猜）")
-    lines.append("# 已实测：过度自信是倾向（演示数据 +0.17）——拍时往低调半档。")
-    for i, (stmt, horizon, note) in enumerate(BIG_DECISIONS, 1):
-        goal_id = goals[0]["id"] if goals else 1
-        for g in goals:
-            t = g["title"].lower()
-            if i == 1 and ("奖牌" in t or "竞赛" in t):
-                goal_id = g["id"]
-            elif i == 2 and ("offer" in t or "岗位" in t):
-                goal_id = g["id"]
-            elif i == 3 and ("tmlr" in t or "投稿" in t):
-                goal_id = g["id"]
+    lines.append("#")
+    lines.append("# 两步法（把直觉变成可复算的估计）：")
+    lines.append("#   1) 参考类：过去 12 个月里，同类事件发生了多少次 / 给了多少次机会？")
+    lines.append("#      例如「提交后 14 天内进面试」：若 20 次投递里 3 次 → 基准 0.15")
+    lines.append("#   2) 收缩：你有实测的过度自信倾向（演示数据 +0.17）。")
+    lines.append("#      p_final ≈ clamp(基准 + 0.05~0.10 的上调, 0.05, 0.95)")
+    lines.append("#      注意：是「先按参考类定基准，再小幅上调」，不是「凭感觉拍再砍一半」")
+    lines.append("#   3) 写进 note 里：你用的是哪个参考类、哪个数字")
+    lines.append("#      —— 到期结算时才知道是「估计错」还是「参考类选错」")
+    for stmt, horizon, note, keys in BIG_DECISIONS:
+        matched = next(
+            (g["id"] for g in goals
+             if any(k.lower() in g["title"].lower() for k in keys)),
+            None,
+        )
+        if matched is None:
+            # 目标不存在（如该目标已暂停）→ 不写这条预测，并留下说明
+            lines.append(f"# ⚠ 跳过预测「{stmt[:20]}…」：没有匹配的 active 目标")
+            lines.append("")
+            continue
+        goal_id = matched
         lines += [
             "[[predictions]]",
             f"goal_id = {goal_id}",
