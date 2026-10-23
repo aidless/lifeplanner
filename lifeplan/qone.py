@@ -20,6 +20,7 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 from . import calc
 from .ledger import DecisionRecord, record, sha256_of
@@ -196,8 +197,11 @@ def _evidence(conn, as_of: str | None = None, root=None) -> tuple[dict, list]:
                           "value": n, "sha256": sha256_of({"git_commits_30d": n, "repos": min(len(repos),30)})})
     except Exception as exc:
         signals["commit_30d"] = None
-        evidence.append({"kind": "git", "detail": f"扫描失败：{type(exc).__name__}",
-                          "value": None, "sha256": sha256_of({"git_error": str(exc)})})
+        # 证据采集失败不能静默：把异常类型和消息都记下来，
+        # 否则「扫描失败：TypeError」这种信息量不足的记录会让人误判为「没提交」。
+        evidence.append({"kind": "git",
+                          "detail": f"扫描失败：{type(exc).__name__}: {exc}",
+                          "value": None, "sha256": sha256_of({"git_error": f"{type(exc).__name__}: {exc}"})})
 
     # 2) 观测密度（tier≥2）
     row = conn.execute(
@@ -331,7 +335,7 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
         s1 = SystemOneAdapter()
         ok, _ = s1.status()
         if not ok:
-            return rule_action, rule_conf, "rules", []
+            return rule_action, rule_conf, "rules", [], {}
 
         state_text = (
             f"项目投入决策。state：{state}。"
@@ -358,12 +362,18 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
             return action, conf, "laya", [], probs
         return rule_action, rule_conf, "rules", ["Laya 置信不足，降级为规则"], probs
     except Exception as exc:
-        return rule_action, rule_conf, "rules", [f"Laya 不可用（{type(exc).__name__}），降级为规则"]
+        return rule_action, rule_conf, "rules", [f"Laya 不可用（{type(exc).__name__}），降级为规则"], {}
 
 
 # ── 主编排 ──────────────────────────────────────────────────
 def ask(state: str, conn, as_of: str | None = None, root=None,
         persist: bool = True) -> QOneAnswer:
+    # root 允许传字符串，内部统一成 Path。
+    # 事故记录（2026-10-23）：CLI 曾直接传 str，导致 scan_projects 里
+    # `Path / str` 抛 TypeError，git 证据整块失效（被 except 吞成 None）。
+    if root is not None and not isinstance(root, Path):
+        root = Path(root).expanduser()
+
     vertical, questions, unknowns, compiled_by = qcompile_auto(state)
     if vertical == "unsupported":
         why = ("量化编译器（LLM）判断该问题无法映射到现有可测信号"

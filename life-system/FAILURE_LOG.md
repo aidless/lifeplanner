@@ -90,10 +90,40 @@
 - **修复**：`_get_agent` 优先 `local_files_only=True`；降级路径带 note。
 - **防线**：适配器 status() 先查缓存；降级链 rules → abstain 有测试。
 
+## F-11 `_decide` 返回元组长度不一致，真实调用必崩（代码缺陷）
+
+- **现象**：`lifeplan qone ask "..."` 抛
+  `ValueError: not enough values to unpack (expected 5, got 4)`。
+  根因：`_decide` 有三处 `return`，拒答分支写 5 个元素，
+  「Laya 不可用」分支只写 4 个（漏了 `probs`）。
+- **为何没被测出来**：182 项测试**从未直接调用过 `_decide`**，
+  走的都是别的路径。这条路径此前只在真机上手动问过一句才暴露。
+- **修复**：补齐两处 return 的 `probs` 元素。
+- **防线**：新增 `TestDecideReturnShape`，逐分支断言返回长度为 5、
+  并断言签名声明的元组长度与实际一致；新增测试直接调用 `_decide`。
+
+## F-12 root 传字符串导致证据整块静默失效（类型缺陷）
+
+- **现象**：`qone ask --root <路径>` 时，git 证据显示「扫描失败：TypeError」，
+  `commit_30d` 为 None，价值总评从 36 掉到 24。
+  根因：CLI 把 str 传给需要 `Path` 的 `scan_projects`，
+  内部 `Path / str` 抛 TypeError，被 `_evidence` 的 except 吞掉。
+- **危险性**：这类失败**看起来像结论**——「你最近没提交代码」
+  其实是「我传错了类型」。若没跑第二次对照，就会把 bug 当成事实写进决策。
+- **修复**：CLI 转 `Path(args.root).expanduser()`；`ask()` 内部对 str 做防御性转换；
+  异常信息从「TypeError」改为「TypeError: 具体消息」。
+- **防线**：新增 `TestRootTypeContract`，用 str 和 Path 两种入参各跑一次，
+  断言 git 证据存在且不含「扫描失败」。
+
 ---
 
 ## 模式总结
 
-十次失败里，**六次是「没有证据时系统/我假装有证据」的变体**
+十二次失败里，**六次是「没有证据时系统/我假装有证据」的变体**
 （F-01/02/03/05/06/07）。这不是巧合——这是量化系统的第一性风险，
 也是 `QUANTIFICATION_PRINCIPLES.md` 把「拒答」写成原则 5 的原因。
+
+**F-11 与 F-12 是同一族的另一半：证据在，但取它的方式错了。**
+前六次是「没有证据却装作有」，后两次是「有证据却取不到，还装作取到了」。
+两者共同指向同一个检查：**当结果异常时，先怀疑取数链路，再怀疑被测对象。**
+F-12 若不跑对照实验，几乎必然被当成「我这周没产出」写进人生决策。

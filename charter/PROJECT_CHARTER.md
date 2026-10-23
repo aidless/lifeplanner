@@ -64,37 +64,41 @@
 | 记忆系统 | 长期状态与历史决策 | 篡改历史（哈希校验） |
 | 人 | 发起、确认、否决、定义价值 | —— |
 
-## 5. 当前资产（截至 2026-10-22）
+## 5. 当前资产（截至 2026-10-23）
 
 | 层 | 状态 | 位置 |
 |---|---|---|
 | 状态面板（多轴） | ✅ 运行中 | `lifeplan/` 价值分×证据置信度双轴 |
 | 证据库（分级+哈希） | ✅ 运行中 | `evidence.py` 四级 + `ledger.py` sha256 |
-| 目标系统 | ✅ 运行中（真实库已建，指标待填） | `metrics.py` / `~/.lifeplan` |
-| 决策引擎 | ✅ v1（Q-One 六层，垂直域：项目投入） | `qone.py` + `calc.py` |
-| 行动实验与复盘 | ✅ 运行中 | `week.py` / `calibration.py` / 周一自动化 |
-| 论文知识库 | 🔄 阶段二起步 | `literature_matrix.csv` |
-| 能力地图 | 🔄 阶段三起步 | `capability_map.md` |
-| 人生量化本体 | 🔄 阶段四起步 | `life_ontology.yaml` |
-| 个性化决策模型 | ⬜ 阶段八（等决策数据积累） | —— |
-| 评测体系 | ⬜ 阶段七 | —— |
+| 目标系统 | ✅ 运行中（真实库 3 指标 / 3 观测 / 2 预测） | `metrics.py` / `~/.lifeplan` |
+| 决策引擎 | ✅ v2（Q-One 六层 + LLM 编译器） | `qone.py` + `qcompiler.py` + `calc.py` |
+| 行动实验与复盘 | ✅ 运行中 | `week.py` / `calibration.py` / `autopilot.py` |
+| 论文知识库 | ✅ 40 篇矩阵 + bib + claim 台账 | `literature_matrix.csv` / `claim_ledger.md` |
+| 能力地图 | ✅ 10 组件 | `model_capability_map.md` |
+| 人生量化本体 | ✅ 15 域 / 16 指标 + 两份 Schema | `life_ontology.yaml` / `evidence_schema.json` |
+| 决策模型（jev-s1） | 🔄 预训练已证伪小规模方案，平台期仍在 | `~/.research/jev-s1` |
+| 评测体系 | 🔄 spec 已写，基线数据为空 | `benchmarks/benchmark_spec.md` |
 
 ## 6. 十阶段路线
 
 1. **定义总纲** ✅ 本文档 + `QUANTIFICATION_PRINCIPLES.md` + 研究问题 + 术语表
-2. **论文与模型知识库** 🔄 `literature_matrix.csv` / `references.bib` / `claim_ledger.md` / `model_comparison.md`
-3. **能力地图** 🔄 `capability_map.md`（10 组件）
-4. **人生量化本体** 🔄 `life_ontology.yaml` / `metric_dictionary.md` / `data_sources.md` / `uncertainty_rules.md`
-5. **系统架构设计** ⬜（分层设计文档，部分已在 `qone.py` 实现）
-6. **Agent 原型** ✅ v1（Q-One；v2 换 LLM 编译器）
-7. **评测体系** ⬜ 数值误差/校准/拒答质量/证据完整性/可复现性/过度优化诱导
-8. **专用决策模型** ⬜ choice→score→measure→forecast→rank，分类校准
-9. **人生系统文档** ⬜ `LIFE_SYSTEM_V1.md`
-10. **最终研究成果** ⬜ 四份报告
+2. **论文与模型知识库** ✅ `literature_matrix.csv`（40 篇）/ `references.bib` / `claim_ledger.md`（CL-01..07 + P1b..P5）
+3. **能力地图** ✅ `model_capability_map.md`（10 组件）
+4. **人生量化本体** ✅ `life_ontology.yaml`（15 域）/ `metric_dictionary.md` / `evidence_schema.json` / `measurement_contract.schema.json`
+5. **系统架构设计** ✅ `agent/ARCHITECTURE.md` + `AGENT_PROTOCOL.md` + `model_router.md` + `action_policy.md`
+6. **Agent 原型** ✅ v2（Q-One + LLM 编译器 v2 + setup 引导）
+7. **评测体系** 🔄 spec 已写，`benchmarks/baseline_results/` 等仍为空 —— 等 ≥20 条结算预测
+8. **专用决策模型** 🔄 jev-s1 平台期未破（CL-04/CL-07）；CL-P1b 大规模预训练未测
+9. **人生系统文档** ✅ `LIFE_SYSTEM_V1.md` + 日/周/月复盘 + 决策日志 + 失败日志（F-01..F-10）
+10. **最终研究成果** ✅ 四份报告：`research_report.md` / `evaluation_report.md` / `failure_analysis.md` / `future_work.md`
 
-**当前焦点：阶段 2-4（知识库、能力地图、本体），为阶段 7-8 的评测与训练备料。**
+**当前焦点：阶段 7-8 的解锁条件是「数据」而非「代码」。**
+阶段 1-6、9-10 的文档与实现已齐备；阶段 7 需 ≥20 条已结算预测、阶段 8 需 ≥50 条带 ★ 字段记录，
+两者都只能靠真实使用累积，不能靠再写代码补。
 
-## 7. 验收标准（可测）
+**2026-10-23 实测的阻塞点**：真实库仍只有 3 条观测、2 条预测、0 条已结算。
+系统本身能跑（覆盖率 100%、审计三项全过），但校准曲线是空的——
+这是 `future_work.md` 里登记的第一号风险「主人不填数据」的真实状态，不是代码问题。
 
 ## 7. 验收标准（蓝图 §17，14 条）
 
@@ -109,11 +113,13 @@
 
 | 维度 | 当前 | 目标 |
 |---|---|---|
-| 真实校准样本 | 0 | ≥ 20（ECE 从 0.38 → < 0.20） |
+| 真实校准样本 | 0 条已结算（2 条待结算） | ≥ 20（ECE 从 0.38 → < 0.20） |
 | 周复盘实际执行 | 0 次 | 每周 1 次 ≤ 3 分钟 |
-| 决策台账 | 2 条 | 持续增长 + 人工修正记录 |
-| 论文矩阵覆盖 | 首批 | 每家族 ≥ 3 篇，claim 全部有来源 |
-| 本体指标 | 0 个（待用户定义） | 11 域各有 ≥ 1 个可结算指标 |
+| 决策台账 | 11 条 | 持续增长 + 人工修正记录 |
+| 论文矩阵覆盖 | 40 篇 | 每家族 ≥ 3 篇，claim 全部有来源 |
+| 本体指标 | 15 域 / 16 指标已定义；真实库 3 个已建 | 每域各有 ≥ 1 个已结算指标 |
+| 指标观测 | 3 条（tier3） | 每周每指标 ≥ 1 条 |
+| 测试覆盖 | 182 通过 / 2 跳过 | 全部通过 |
 
 ## 9. 隐私与开源边界
 

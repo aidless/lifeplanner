@@ -874,7 +874,10 @@ def cmd_qone(args) -> None:
     state = " ".join(args.state).strip()
     if not state:
         _err("请提供待量化的问题，例如：lifeplan qone ask 这个项目是否值得继续投入")
-    ans = ask(state, conn, root=args.root)
+    # root 必须转成 Path：scan_projects 内部用 `Path / 字符串` 拼路径，
+    # 传字符串会抛 TypeError（2026-10-23 实测）。
+    root = Path(args.root).expanduser() if args.root else None
+    ans = ask(state, conn, root=root)
     contract = ans.to_contract()
 
     if args.json:

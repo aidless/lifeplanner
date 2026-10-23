@@ -172,5 +172,97 @@ class TestQOneContract(unittest.TestCase):
             self.assertLessEqual(it[1], 100.0)
 
 
+class TestDecideReturnShape(unittest.TestCase):
+    """`_decide` 的返回元组长度契约。
+
+    事故记录（2026-10-23）：真实调用 `qone ask` 时抛
+    `ValueError: not enough values to unpack (expected 5, got 4)`。
+    根因是三处 `return` 漏掉了 `probs` 元素——拒答分支写 5 个，
+    Laya 不可用分支只写 4 个。测试从未直接调用过 `_decide`，
+    所以 182 项测试全绿也没发现。
+
+    这个测试的作用是把「所有 return 分支长度一致」钉死，
+    防止再加分支时又漏一个。
+    """
+
+    def test_all_branches_return_five_elements(self):
+        from lifeplan.qone import _decide
+
+        # 分支 1：拒答（无可核验证据）
+        abstain = _decide(
+            "随便一个问题",
+            {"verified_obs_30d": 0, "calibration_n": 0, "goals_with_metrics": 0},
+            {},
+        )
+        self.assertEqual(len(abstain), 5)
+        self.assertEqual(abstain[0], "collect_more_evidence")
+        self.assertEqual(abstain[2], "abstain")
+        self.assertIsInstance(abstain[4], dict)
+
+        # 分支 2：有证据但结构不完整 → 规则兜底
+        rule = _decide(
+            "项目投入决策",
+            {"verified_obs_30d": 3, "calibration_n": 10, "goals_with_metrics": 2},
+            {"价值总评": {"value": 50.0}, "结构完整度": {"value": 0.2}},
+        )
+        self.assertEqual(len(rule), 5)
+        self.assertEqual(rule[0], "collect_more_evidence")
+        self.assertEqual(rule[2], "rules")
+        self.assertIsInstance(rule[3], list)
+        self.assertIsInstance(rule[4], dict)
+
+    def test_return_type_annotation_matches_arity(self):
+        """签名声明 5 元组，就必须真的返回 5 个。"""
+        import inspect
+
+        from lifeplan.qone import _decide
+
+        sig = inspect.signature(_decide)
+        ret = sig.return_annotation
+        # tuple[str, float, str, list, dict] → 5
+        self.assertIn("dict", str(ret))
+        self.assertEqual(str(ret).count(","), 4, f"返回类型应声明 5 元组，实际：{ret}")
+
+
+class TestRootTypeContract(unittest.TestCase):
+    """root 参数必须是 Path，传字符串会让证据采集整块失效。
+
+    事故记录（2026-10-23）：`qone ask --root <路径>` 传入 str，
+    `scan_projects` 内部执行 `Path / str` 抛 TypeError，
+    被 `_evidence` 的 except 吞掉 → git 信号变 None、证据显示
+    「扫描失败：TypeError」。表面看是「你没提交代码」，
+    实际是类型错误 —— 这类静默降级最危险。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        os.environ["LIFEPLAN_HOME"] = self.tmp.name
+        from lifeplan.db import connect, init_db
+
+        self.conn = connect(init_db())
+
+    def tearDown(self):
+        self.conn.close()
+        self.tmp.cleanup()
+
+    def test_str_root_is_accepted_and_converted(self):
+        from pathlib import Path
+
+        ans = ask("这个项目是否值得继续投入", self.conn, root=str(self.tmp.name))
+        git_items = [e for e in ans.evidence if e.get("kind") == "git"]
+        self.assertTrue(git_items, "应至少产出一条 git 证据记录")
+        detail = git_items[0].get("detail", "")
+        self.assertNotIn("扫描失败", detail,
+                         f"传 str 的 root 不应导致扫描失败，实际：{detail}")
+
+    def test_path_root_also_works(self):
+        from pathlib import Path
+
+        ans = ask("这个项目是否值得继续投入", self.conn, root=Path(self.tmp.name))
+        git_items = [e for e in ans.evidence if e.get("kind") == "git"]
+        self.assertTrue(git_items)
+        self.assertNotIn("扫描失败", git_items[0].get("detail", ""))
+
+
 if __name__ == "__main__":
     unittest.main()
