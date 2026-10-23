@@ -1,0 +1,41 @@
+id,family,title,authors_year,venue,problem,core_idea,training,data,inference_cost,boundary,reproducible,transferable_component,evidence_tier
+found-01,基础模型,Attention Is All You Need,Vaswani et al. 2017,NeurIPS,序列建模依赖循环结构难以并行,自注意力 + 位置编码 + FFN 的纯注意力架构,监督（翻译）,WMT 英德/英法,训练贵推理 O(n²),长序列成本高；无记忆,是,一切注意力架构的祖先,L4
+found-02,基础模型,BERT,Devlin et al. 2018,NAACL,双向上下文表征学习,MLM + NSP 预训练,MLM + NSP,BooksCorpus + Wikipedia,编码器双向不可生成,不能做生成；512 上限,是,Laya 骨干所属谱系（双向 encoder）,L4
+found-03,基础模型,ModernBERT,Warner et al. 2024,arXiv,BERT 时代架构与训练过时,现代组件（RoPE/GQA/FlashAttention）+ 长训练,MLM + 多阶段,网页 + 代码,encoder 推理快,只做理解不做生成,是,Laya 英文 checkpoint 的骨干；jev-s1 架构参照,L4
+found-04,基础模型,Llama 2,Touvron et al. 2023,arXiv,开放权重模型的训练透明度,完整披露数据混比/超参/RLHF 流程,预训练 + SFT + RLHF,公开数据混比 2T tokens,7B-70B 推理成本高,许可限制商用；RLHF 细节部分公开,权重开放流程半开放,开源家族基线；数据混比方法论,L4
+found-05,基础模型,Qwen2.5,Qwen Team 2024,arXiv,中文为主的开放模型生态,18 小时长上下文 + 多语言 + 尺寸梯度,预训练 + SFT + DPO 变体,大规模多语言,0.5B-72B 梯度,72B 需多卡；许可变更需留意,是（权重+报告）,中文垂直域首选基座,L4
+found-06,基础模型,DeepSeek-V3,DeepSeek-AI 2024,arXiv,MoE 训练成本与稳定性,无辅助损失负载均衡 + 多 token 预测,预训练 + RL,14.5T tokens,671B 总参/37B 激活,训练基础设施门槛极高,部分（技术报告详尽）,MoE 负载均衡方法论,L3
+found-07,基础模型,Mixtral 8x7B,Mistral AI 2023,arXiv,稀疏 MoE 的实用化,8 专家 top-2 路由,预训练,未详述,推理 ~13B 等效,专家路由不可控；许可 Apache 2.0,是（权重）,稀疏激活的性价比范式,L3
+found-08,基础模型,Gemma,Google 2024,arXiv,小而强的开放模型,大模型蒸馏 + 严格数据过滤,预训练 + 指令微调,未详述,2B-27B,生态绑定较弱；许可限制,权重开放,小模型数据过滤方法论,L3
+found-09,基础模型,Phi-3,Microsoft 2024,arXiv,数据质量能否替代数据规模,教科书式高质量合成数据,过滤 + 合成 + 预训练,合成为主,3.8B 达更大模型水平,合成数据分布偏移风险,部分,数据质量 > 规模的证据；人生系统数据构建参照,L3
+found-10,基础模型,OLMo 2,AI2 2024,arXiv,完全开放（数据+代码+中间检查点）,Dolma 数据集 + 两阶段退火,预训练 + SFT + DPO,Dolma 全公开,7B-13B,生态较小,是（完全开放）,全开放训练的可复现范式,L4
+train-01,推理与训练,InstructGPT,Ouyang et al. 2022,arXiv,对齐人类意图,RLHF（SFT + RM + PPO）,RLHF,人类演示 + 偏好比较,推理成本不变,奖励黑客；RM 偏差,部分,奖励模型方法论；人类偏好即参考系,L3
+train-02,推理与训练,Direct Preference Optimization,Rafailov et al. 2023,arXiv,RLHF 不稳定且复杂,用闭式分类目标替代 RL,DPO,偏好对,与 SFT 同量级,长度偏置；对分布外偏好脆弱,是,"偏好优化的默认起点；人生系统的""人工修正""可转偏好对",L4
+train-03,推理与训练,GRPO,Shao et al. 2024（DeepSeekMath）,arXiv,PPO 需要 value 网络成本高,组内相对优势替代 value 网络,GRPO,数学题 + 结果奖励,训练省一个 critic,答案可验证域才适用,部分（复现众多）,可验证奖励域的强化学习范式,L3
+train-04,推理与训练,Constitutional AI,Bai et al. 2022,arXiv,RLHF 依赖大量人工标注,AI 自我批评 + 原则修订,SL + RLAIF,合成 Critiques,比 RLHF 省人工,原则集决定行为上限,部分,原则即宪法的可审计对齐范式,L3
+train-05,推理与训练,Let's Verify Step by Step,Lightman et al. 2023,arXiv,结果奖励对推理链无信号,逐步过程奖励标注 PRM800K,PRM 训练,MATH + 人工标注,推理时需多次采样,过程标注贵；奖励仍可被黑客,数据开放,"过程奖励 → 人生系统""步骤级""证据分级",L3
+train-06,推理与训练,DistilBERT,Sanh et al. 2019,arXiv,大模型部署成本,知识蒸馏（软标签 + 温度）,蒸馏,GLUE,小 40% 快 60%,任务特定；非通用,是,蒸馏方法论；小模型降级路径,L4
+agent-01,Agent,ReAct,Yao et al. 2022,ICLR 2023,推理与行动脱节,思考-行动-观察循环交替,提示（无训练）,Few-shot 演示,推理成本随步数线性,错误会累积进上下文；无重试,是,"Agent 循环原型；人生系统""决策→证据→复盘""循环",L4
+agent-02,Agent,Toolformer,Schick et al. 2023,arXiv,工具调用需大量人工标注,自监督：模型自己标注 API 调用收益,自监督插入 + SFT,CCNet,与基座同,工具集固定；调用错误无感知,是,工具调用自举方法论,L3
+agent-03,Agent,Reflexion,Shinn et al. 2023,NeurIPS,失败后无改进机制,语言化反思存入情景记忆,RL + 语言反馈,任务轨迹,需多轮试验,记忆无检索策略；任务特定,是,反思-纠错组件；复盘机制的理论依据,L3
+agent-04,Agent,Voyager,Wang et al. 2023,arXiv,开放世界无课程,代码即技能库 + 自动课程,GPT-4 提示 + 迭代,Minecraft,依赖大模型 API,域封闭；技能库无泛化,部分,技能库 = 可复用组件库；能力地图的先例,L3
+agent-05,Agent,SWE-agent,Yang et al. 2024,arXiv,软件工程任务需专用交互,AC + 定制化 Agent-Computer 接口,提示 + 搜索,SWE-bench,多次尝试成本高,域特定；接口设计关键,是,专用接口设计方法论（人生系统的 CLI 即接口）,L3
+agent-06,Agent,Generative Agents,Park et al. 2023,arXiv,可信的人类行为模拟,记忆流 + 反思 + 规划,提示工程,25 个角色,成本高不可部署,不可验证；模拟非真实,部分,记忆流架构（检索/反思/重要性打分）,L3
+rag-01,检索与记忆,RAG,Lewis et al. 2020,NeurIPS,参数化知识难更新,Dense 检索 + 生成器联合训练,对比学习 + 生成,Wikipedia,检索增支,检索质量天花板；更新不同步,是,外部证据进入上下文的标准范式,L4
+rag-02,检索与记忆,Lost in the Middle,Liu et al. 2023,arXiv,长上下文利用不均,位置偏差实验：中间信息利用率低,无（评测）,NQ 等,无,暴露长上下文局限；非解决方案,是（代码开源）,证据排序的方法论依据：关键证据放首尾,L4
+rag-03,检索与记忆,LLMLingua,Jiang et al. 2023,EMNLP,长上下文成本高,小模型做 token 级压缩,蒸馏 + 提示,GPT-4 总结数据,降低 20x 且性能保留,压缩有损；任务特定,是,上下文压缩组件（人生系统状态注入）,L3
+dec-01,决策模型,Jev（System One）,TypeSafe AI 2026,商业产品（闭源）,生成模型做结构化判断又贵又不稳,托管 typed-decision API,未公开,未公开,快（托管）,闭源不可审计；无本地选项,否,决策层的产品形态对标,L3
+dec-02,决策模型,Laya,Nandhakishor M 2026,arXiv/开源（Apache 2.0）,Jev 闭源不可自建,ModernBERT 骨干 + 决策头 + RLCD,RLCD（proper scoring rule 奖励）,typed-decisions 工作流,T4 上 32.8ms/题,零样本接近随机（0.362 vs 0.318）；出厂过自信,是,本系统决策层基座；jevs1 架构对标,L3
+dec-03,决策模型,ModernBERT 决策头（本系统 jev-s1）,本项目 2026,内部,验证无预训练时决策头可否学成,双向 encoder + 选项末 token 打分,CE 监督,合成选择任务,nano 1.3M 参数,存在内容绑定平台期（见 claim_ledger CL-04）,是（代码开源）,平台期证据；预训练必要性证明,L4
+cal-01,校准,Temperature Scaling,Guo et al. 2017,ICML,神经网络过自信,验证集拟合单一温度参数,后验（无训练）,ImageNet,几乎为零,分布偏移时失效；需留出集,是,温标重校的标准方法；人生系统已实现,L4
+cal-02,校准,On Calibration of Modern NNs,Naeini et al. 2015,ICML,ECE 估计有偏,无偏 ECE 估计 + 混合校正,后验,多数据集,近零,bin 数敏感,是,ECE 度量的正确用法,L4
+cal-03,选择性预测,Learning to Abstain,Geifman & El-Yaniv 2017,NeurIPS,不确定时不该硬答,置信度阈值选择性预测,阈值搜索,多数据集,推理成本不变,阈值随域漂移,是,拒答策略的理论依据；人生系统 need_data 门,L4
+cal-04,共形预测,A Tutorial on Conformal Prediction,Angelopoulos & Bates 2021,JMLR,点预测无保证,交换性下的分布无关区间,后验（无训练）,任意,几乎为零,需校准集；覆盖率为边际保证,是,区间生成的备选方案（当前用 bootstrap）,L4
+cau-01,因果推断,Causality,Pearl 2009,专著,相关不等于因果,do-演算 + 结构因果模型,理论,任意,不适用,干预不可行时无解,理论,参考系设计的理论依据,L3
+cau-02,因果推断,Double ML,Chernozhukov et al. 2018,JOE,高维混杂控制,正交化 + 交叉拟合,统计方法,任意,计算中等,需无未观测混杂假设,是（实现众多）,"人生系统""干预是否有效""的检验工具",L3
+voi-01,价值信息,Value of Information,Howard 1966,IEEE,何时值得再测一次,EVSI = 信息后期望收益 − 当前最优收益,决策理论,任意,不适用,先验难定,理论,next_measurement 的理论依据：先测信息价值最高的,L3
+life-01,人生系统,Implementation Intentions,Gollwitzer 1999,AP,如果-那么计划的效应,情境锚定 + 自动触发,现场实验,元分析,不适用,效应量随情境衰减,是（元分析）,行动实验设计：把目标写成 if-then,L4
+life-02,人生系统,Goal-Setting Theory,Locke & Latham 2002,专著,目标如何影响绩效,具体 + 困难目标优于模糊目标,现场实验,元分析,不适用,过度困难目标反效果,是（元分析）,指标具体性原则的实验依据,L4
+life-03,人生系统,Satisfaction With Life Scale,Diener et al. 1985,J Personality,幸福感可量化,5 条目自评量表（心理测量学验证）,量表开发,大样本,不适用,自评偏差；文化差异,是（量表公开）,主观幸福感的参照系（与本系统客观指标并列）,L4
+life-04,人生系统,Thinking in Systems,Meadows 2008,专著,线性思维漏反馈,存量/流量/反馈/延迟的系统语言,理论,不适用,不适用,无量化,否,系统思维框架：人生系统的延迟与反馈分析,L3
+life-05,人生系统,Prospect Theory,Kahneman & Tversky 1979,Econometrica,期望效用不符实际,损失厌恶 + 参考点依赖,实验,实验,不适用,描述性非规范性,是（经典）,个人风险偏好的参照系；预测概率需按参考点解读,L4

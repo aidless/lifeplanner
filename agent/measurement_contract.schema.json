@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aidless/lifeplanner/measurement_contract.schema.json",
+  "title": "Q-One Measurement Contract",
+  "description": "量化协议：指标定义（§8.1）+ 量化结果（§8.2）。任何量化必须同时满足两部分，缺一即未量化。",
+  "definitions": {
+    "metric_definition": {
+      "type": "object",
+      "required": ["metric_id", "name", "construct", "unit", "time_window", "update_frequency"],
+      "properties": {
+        "metric_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "name": {"type": "string"},
+        "construct": {"type": "string", "description": "操作性定义：别人照做能复现的步骤"},
+        "unit": {"type": "string"},
+        "time_window": {"type": "string"},
+        "dimensions": {"type": "array", "items": {"type": "string"},
+                       "description": "多维指标的子维度；并列展示，禁止合成单一总分"},
+        "evidence_required": {"type": "boolean", "default": true},
+        "uncertainty_required": {"type": "boolean", "default": true},
+        "update_frequency": {"type": "string",
+                             "enum": ["daily", "weekly", "monthly", "quarterly", "yearly"]},
+        "direction": {"type": "string", "enum": ["increase", "decrease", "maintain"]},
+        "baseline": {"type": ["number", "null"], "description": "由人填写并冻结；系统不预填"},
+        "target": {"type": ["number", "null"], "description": "由人填写并冻结"},
+        "tolerance": {"type": "number", "minimum": 0},
+        "baseline_at": {"type": "string", "description": "基线冻结时间；晚于首观测即基线追认"}
+      }
+    },
+    "measurement_result": {
+      "type": "object",
+      "required": ["metric_id", "value", "confidence"],
+      "properties": {
+        "metric_id": {"type": "string"},
+        "value": {"type": ["number", "string", "null"], "description": "null = 拒答/无数据"},
+        "interval": {"type": ["array", "null"], "items": {"type": "number"},
+                     "minItems": 2, "maxItems": 2,
+                     "description": "[下界, 上界]；n<2 时必须为 null（不给虚假精确）"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "confidence_type": {"type": "string", "enum": ["calibrated", "heuristic", "none"]},
+        "evidence_ids": {"type": "array", "items": {"type": "string"}},
+        "assumptions": {"type": "array", "items": {"type": "string"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}},
+        "next_measurement": {
+          "type": ["object", "null"],
+          "properties": {
+            "action": {"type": "string"},
+            "expected_information_gain": {"type": "string", "enum": ["high", "medium", "low"]}
+          },
+          "required": ["action"]
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/definitions/metric_definition"},
+    {"$ref": "#/definitions/measurement_result"}
+  ]
+}

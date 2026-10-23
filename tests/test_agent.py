@@ -250,8 +250,10 @@ class TestAdapters(AgentTestCase):
             os.environ.pop("LIFEPLAN_JEV_CKPT", None)
 
     def test_pick_falls_back_to_scripted(self):
-        """机器上可能真有 Ollama 在跑，所以"没有端点"必须主动模拟：
-        把 base 指到一个死端口，才能确定性地走到 scripted。"""
+        """机器上可能真有 Ollama/laya，所以"没有可用适配器"必须主动模拟：
+        LLM 指向死端口 + systemone 状态置为不可用，才能确定性地走到 scripted。"""
+        import lifeplan.agent.adapters as A
+
         os.environ["LIFEPLAN_JEV_CKPT"] = str(Path(self.tmp.name) / "nope.pt")
         s = socket.socket()
         s.bind(("127.0.0.1", 0))
@@ -259,11 +261,14 @@ class TestAdapters(AgentTestCase):
         s.close()
         os.environ["LIFEPLAN_LLM_BASE_URL"] = f"http://127.0.0.1:{dead_port}/v1"
         os.environ.pop("LIFEPLAN_LLM_MODEL", None)
+        orig = A.SystemOneAdapter.status
+        A.SystemOneAdapter.status = lambda self: (False, "测试：模拟不可用")
         try:
             ad, skipped = pick_adapter()
             self.assertEqual(ad.name, "scripted")
             self.assertTrue(skipped, "应记录被跳过的适配器原因")
         finally:
+            A.SystemOneAdapter.status = orig
             os.environ.pop("LIFEPLAN_JEV_CKPT", None)
             os.environ.pop("LIFEPLAN_LLM_BASE_URL", None)
 

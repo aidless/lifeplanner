@@ -132,10 +132,18 @@ class TestOpenAICompat(AdapterTestCase):
 
 class TestPickAdapter(AdapterTestCase):
     def test_openai_preferred_when_configured(self):
-        ad, skipped = pick_adapter()
-        self.assertEqual(ad.name, "openai-compat")
-        # jev-local 应在跳过名单里
-        self.assertTrue(any(s.startswith("jev-local") for s in skipped))
+        """配置了 openai 端点时优先选它——但本机若装着 laya，
+        systemone 会抢先，所以测试里显式让 systemone 不可用。"""
+        import lifeplan.agent.adapters as A
+
+        orig = A.SystemOneAdapter.status
+        A.SystemOneAdapter.status = lambda self: (False, "测试：模拟不可用")
+        try:
+            ad, skipped = pick_adapter()
+            self.assertEqual(ad.name, "openai-compat")
+            self.assertTrue(any(s.startswith("jev-local") for s in skipped))
+        finally:
+            A.SystemOneAdapter.status = orig
 
     def test_decide_via_pick(self):
         ad, _ = pick_adapter()

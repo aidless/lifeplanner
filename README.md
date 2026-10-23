@@ -588,6 +588,18 @@ lifeplan qone verify                               # 台账哈希校验
 3. **台账可验伪**：sha256 覆盖规范化 JSON，改一个字节就能被发现
    （`lifeplan qone verify`）
 
+### 仓库结构（文档 §15）
+
+```
+charter/     总纲 · 原则 · 研究问题 · 术语 · 非目标 · 隐私
+literature/  论文矩阵 · 综述 · claim 台账 · 能力地图 · BibTeX
+ontology/    人生本体 · 指标词典
+agent/       架构 · 协议 · 路由 · 三份 Schema
+benchmarks/  评测规范（七级基线 + 消融）
+life-system/ 失败日志 · 试点案例
+model/ reports/   （阶段八/十预留）
+```
+
 ### 当前 Scope（诚实版）
 
 v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并记入 unknown——
@@ -599,7 +611,7 @@ v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并�
 
 ## 项目总纲：从人生规划系统到「人生系统」
 
-本仓库正按十阶段路线演进为**可审计的人生操作系统**（总纲见 `PROJECT_CHARTER.md`）：
+本仓库正按十阶段路线演进为**可审计的人生操作系统**（总纲见 `charter/PROJECT_CHARTER.md`）：
 
 ```
 开源模型论文研究 → 能力组件归纳 → 量化本体设计 → Agent 原型
@@ -610,15 +622,21 @@ v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并�
 
 | 文件 | 内容 | 阶段 |
 |---|---|---|
-| `PROJECT_CHARTER.md` | 总纲：核心命题、五条禁止事项、角色边界、十阶段路线 | 一 ✅ |
-| `QUANTIFICATION_PRINCIPLES.md` | 万物量化十原则（量化八元组、证据分级、拒答策略…） | 一 ✅ |
-| `research_questions.md` | 10 个研究问题，各带可证伪判据 | 一 ✅ |
-| `GLOSSARY.md` | 全文术语统一 | 一 ✅ |
-| `literature_matrix.csv` | 40 篇代表论文/模型矩阵（9 家族） | 二 🔄 |
-| `claim_ledger.md` | 已核验声明台账（含 4 条本项日实测声明 + 5 条待核） | 二 🔄 |
-| `capability_map.md` | 10 个能力组件：选型/可本地/评测/降级 | 三 🔄 |
-| `life_ontology.yaml` | 11 域本体：12 个指标九字段定义 + 跨域审计规则 | 四 🔄 |
-| `metric_dictionary.md` | 指标词典与设计说明（如「学习质量」五维分解） | 四 🔄 |
+| `charter/PROJECT_CHARTER.md` | 总纲：核心命题、五条禁止事项、角色边界、十阶段路线 | 一 ✅ |
+| `charter/QUANTIFICATION_PRINCIPLES.md` | 万物量化十原则（量化八元组、证据分级、拒答策略…） | 一 ✅ |
+| `charter/RESEARCH_QUESTIONS.md` | 10 个研究问题，各带可证伪判据 | 一 ✅ |
+| `charter/GLOSSARY.md` | 全文术语统一 | 一 ✅ |
+| `literature/literature_matrix.csv` | 40 篇代表论文/模型矩阵（9 家族） | 二 🔄 |
+| `literature/claim_ledger.md` | 已核验声明台账（含 4 条本项日实测声明 + 5 条待核） | 二 🔄 |
+| `literature/model_capability_map.md` | 10 个能力组件：选型/可本地/评测/降级 | 三 🔄 |
+| `ontology/life_ontology.yaml` | 11 域本体：12 个指标九字段定义 + 跨域审计规则 | 四 🔄 |
+| `ontology/metric_dictionary.md` | 指标词典与设计说明（如「学习质量」五维分解） | 四 🔄 |
+| `charter/NON_GOALS.md` · `charter/privacy_policy.md` | 非目标清单 · 隐私政策 | 一 ✅ |
+| `literature/literature_review.md` · `literature/references.bib` | 综述（40 篇）+ BibTeX | 二 🔄 |
+| `agent/ARCHITECTURE.md` · `agent/AGENT_PROTOCOL.md` · `agent/MODEL_ROUTING_GUIDE.md` | 架构/协议/路由 | 四 ✅ |
+| `agent/*.schema.json`（3 份） | 测量/证据/决策协议 Schema（有测试校验） | 四 ✅ |
+| `benchmarks/benchmark_spec.md` | 七级基线 + 消融 + 指标 | 七 ⬜ |
+| `life-system/FAILURE_LOG.md` · `life-system/PILOT_CASES.md` | 10 次失败记录 · 试点案例 | 五 🔄 |
 | `docs/OPTIMIZATION.md` · `docs/REVIEW-2026-10-22.md` | 优化诊断与复视记录 | —— |
 
 ### 核心路线（不可颠倒）

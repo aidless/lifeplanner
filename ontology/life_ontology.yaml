@@ -9,8 +9,40 @@
 # 九字段：name / operational_definition / unit_or_scale / data_source /
 #         cadence / computation / uncertainty / applicable_boundary / possible_misleading
 
-version: 1
+version: 2
 updated: 2026-10-22
+
+# ── 核心实体（文档 §9.1） ─────────────────────────────────
+entities:
+  - Person            # 本体所有者
+  - Domain            # 人生领域（下方 domains）
+  - Goal              # 目标（结构见 goal_schema）
+  - Value             # 价值排序（只陈述，不计算）
+  - Constraint        # 约束（时间/金钱/健康/承诺）
+  - Resource          # 资源（钱/时间/精力/注意力）
+  - Observation       # 一次观测（带证据分级）
+  - Metric            # 指标（九字段）
+  - Hypothesis        # 可证伪假设（行动实验的前提）
+  - Experiment        # 行动实验（if-then + 预期 + 实际）
+  - Decision          # 决策（decisions 台账）
+  - Action            # 行动（按 L0-L4 分级）
+  - Outcome           # 结果（预期 vs 实际）
+  - Review            # 复盘（修正 Goal/Metric/权重）
+
+# ── 目标结构（文档 §9.3，缺一不可） ───────────────────────
+goal_schema:
+  goal_id: string
+  name: string
+  why: string                  # 为什么重要（链接到 Value）
+  success_condition: string    # 怎么算达成（可证伪）
+  measurement: list            # 关联 metric_id
+  deadline: date
+  resources: list              # 需要的资源
+  constraints: list            # 约束
+  priority: integer
+  reversible: boolean          # true = 可逆（L2 自动；false = L3 人工）
+  review_frequency: enum       # daily/weekly/monthly/quarterly
+
 domains:
 
   - domain: 健康
@@ -167,10 +199,28 @@ domains:
         applicable_boundary: "结构指标，非绩效指标"
         possible_misleading: "过度分散导致无一深入——需与深度指标平衡"
 
+  - domain: 心理和情绪
+    weight: 0.1
+    note: "情绪不进加权计算；只记录模式供复盘（详见 metric_dictionary）"
+    metrics:
+      - name: 情绪标记频次
+        operational_definition: "每日一次自评，从固定 6 词中选 1-2 个标记当日主导情绪"
+        unit_or_scale: "次/周（每个情绪词分别计数）"
+        data_source: "自评（tier1）"
+        cadence: daily
+        computation: "按词计数；只看分布变化，不看高低"
+        uncertainty: "自评偏差；词汇覆盖有限"
+        applicable_boundary: "描述分布，不描述强度"
+        possible_misleading: "为'看起来积极'而选词——允许全部负向词，不设目标值"
+
   - domain: 意义与价值
     quantified: false                # 原则 6：只登记，不量化
     note: "此域只接受偏好声明与价值排序文本，不产生任何参与计算的数值"
     declarations: []                 # ← 由主人书写，系统存档
+
+# ── 证据等级映射（文档 §6） ───────────────────────────────
+#   本系统 L1-L4 ↔ 文档 A-D：L4 可复现=A；L3 可核验=B；L2 有记录=C；
+#   L1 断言/宣传=D（D 级材料禁止直接支撑模型能力结论，见 claim_ledger）
 
 # ── 跨域审计规则（audit.py 已实现四条，此处为声明） ──────────────
 cross_domain_audits:

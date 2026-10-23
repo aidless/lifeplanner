@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aidless/lifeplanner/EVIDENCE_SCHEMA.json",
+  "title": "Q-One Evidence Record",
+  "description": "证据层记录（文档 §7.2）。每条证据必须能回答：从哪来、何时采、何时失效、内容哈希、可靠度、隐私级、被谁用。",
+  "type": "object",
+  "required": ["evidence_id", "source", "source_type", "collected_at", "content_hash", "reliability", "privacy_level"],
+  "properties": {
+    "evidence_id": {"type": "string"},
+    "source": {"type": "string", "description": "URL / 文件路径 / 数据库查询 / git 仓库"},
+    "source_type": {"type": "string",
+                    "enum": ["user_input", "file", "git", "database", "web", "api", "model_inference"]},
+    "collected_at": {"type": "string", "format": "date-time"},
+    "valid_from": {"type": "string", "format": "date"},
+    "valid_until": {"type": ["string", "null"], "format": "date",
+                    "description": "证据失效日期；null = 长期有效"},
+    "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$",
+                     "description": "sha256，保证证据未被篡改"},
+    "reliability": {"type": "string", "enum": ["L1", "L2", "L3", "L4"],
+                    "description": "L1 断言/自述 · L2 有记录 · L3 可核验 · L4 可复现"},
+    "privacy_level": {"type": "string", "enum": ["public", "private", "sensitive", "secret"],
+                      "description": "sensitive/secret 级禁止离开本机"},
+    "used_for": {"type": "array", "items": {"type": "string"},
+                 "description": "该证据被哪些量化/决策引用"}
+  }
+}

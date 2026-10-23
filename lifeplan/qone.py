@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from . import calc
 from .ledger import DecisionRecord, record, sha256_of
@@ -52,7 +52,10 @@ class QOneAnswer:
     assumptions: list
     unknowns: list
     next_measurement: str | None
-    decided_by: str                     # "laya" | "rules"
+    decided_by: str                     # "laya" | "rules" | "abstain"
+    decision_id: str = ""               # 决策协议 §8.3
+    probabilities: dict = field(default_factory=dict)   # 各选项概率
+    confidence_type: str = "calibrated"  # calibrated | heuristic | none
 
     def to_contract(self) -> dict:
         """对外 JSON 契约：value/interval/confidence/action/evidence/assumptions/unknowns。"""
@@ -64,11 +67,16 @@ class QOneAnswer:
             out[qid] = {"level": v["level"], "rule": v["rule"]}
         out["action"] = self.action
         out["confidence"] = round(self.confidence, 3)
+        out["confidence_type"] = self.confidence_type
+        if self.probabilities:
+            out["probabilities"] = self.probabilities
         out["evidence"] = self.evidence
         out["assumptions"] = self.assumptions
         out["unknowns"] = self.unknowns
         out["next_measurement"] = self.next_measurement
         out["decided_by"] = self.decided_by
+        if self.decision_id:
+            out["decision_id"] = self.decision_id
         return out
 
 
@@ -98,7 +106,8 @@ def qcompile(state: str) -> tuple[str, list[Question], list[str]]:
                  instructions="继续投入的风险等级"),
         Question("action", "choice",
                  criteria={"continue": "继续投入", "pivot": "调整方向",
-                           "stop": "停止", "need_data": "先补充证据"},
+                           "pause": "暂停观望", "stop": "停止",
+                           "need_data": "先补充证据"},
                  instructions="应该对这个项目做什么"),
         Question("证据充分性", "noul",
                  instructions="现有证据是否足以支撑上面的裁决"),
@@ -232,7 +241,7 @@ def _uncertainty(signals: dict, evidence: list) -> tuple[dict, list]:
 
 
 # ── 决策模型（choice/noul） ─────────────────────────────────
-def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, list]:
+def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, list, dict]:
     """choice 题交给决策模型（Laya），降级为文档化规则。
 
     拒答策略（测试钉死）：没有任何可核验证据时——无 tier≥2 观测、
@@ -248,7 +257,7 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
     if no_real_evidence:
         return "need_data", 0.8, "abstain", [
             "无可核验观测、无校准样本、无指标目标——按拒答策略只裁决 need_data"
-        ]
+        ], {}
 
     value = values.get("价值总评", {}).get("value", 0)
     structural = values.get("结构完整度", {}).get("value")
@@ -261,6 +270,8 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
         rule_action, rule_conf = "continue", 0.6
     elif value >= 35:
         rule_action, rule_conf = "pivot", 0.55
+    elif value >= 20:
+        rule_action, rule_conf = "pause", 0.55
     else:
         rule_action, rule_conf = "stop", 0.6
 
@@ -282,9 +293,10 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
         )
         questions = {
             "action": {"type": "choice",
-                       "instructions": "这个项目应该继续投入、调整方向、停止，还是先补充证据？",
+                       "instructions": "这个项目应该继续投入、调整方向、暂停、停止，还是先补充证据？",
                        "criteria": {"continue": "价值与证据都支持继续",
                                     "pivot": "方向需调整",
+                                    "pause": "暂缓观察",
                                     "stop": "投入产出不成立",
                                     "need_data": "关键证据缺失，无法判断"}},
         }
@@ -292,9 +304,10 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
         ans = res.get("answers", {}).get("action", {})
         action = ans.get("choice")
         conf = ans.get("confidence", 0.0) or 0.0
-        if action in ("continue", "pivot", "stop", "need_data") and conf >= 0.5:
-            return action, conf, "laya", []
-        return rule_action, rule_conf, "rules", ["Laya 置信不足，降级为规则"]
+        probs = ans.get("probabilities") or {}
+        if action in ("continue", "pivot", "pause", "stop", "need_data") and conf >= 0.5:
+            return action, conf, "laya", [], probs
+        return rule_action, rule_conf, "rules", ["Laya 置信不足，降级为规则"], probs
     except Exception as exc:
         return rule_action, rule_conf, "rules", [f"Laya 不可用（{type(exc).__name__}），降级为规则"]
 
@@ -321,7 +334,7 @@ def ask(state: str, conn, as_of: str | None = None, root=None,
     signals, evidence = _evidence(conn, as_of, root)
     values, unknowns2 = _uncertainty(signals, evidence)
     unknowns = unknowns + unknowns2
-    action, conf, decided_by, notes = _decide(state, signals, values)
+    action, conf, decided_by, notes, probs = _decide(state, signals, values)
 
     # 总置信度 = 裁决置信度 × 证据覆盖度（证据缺一半，置信度就打对折）
     coverage = sum(1 for e in evidence if e.get("value") is not None) / max(len(evidence), 1)
@@ -336,6 +349,10 @@ def ask(state: str, conn, as_of: str | None = None, root=None,
         scores={"risk": {"level": _risk_level(values), "rule": "价值总评<35→极高；35-60→高；60-80→中；≥80→低"}},
         action=action,
         confidence=confidence,
+        decision_id=f"decision_{datetime.now():%Y%m%d_%H%M%S}",
+        probabilities=probs,
+        confidence_type=("calibrated" if signals.get("calibration_n", 0) >= 20
+                         else "heuristic"),
         evidence=evidence,
         assumptions=[
             "投入强度以 git 提交为代理，不等于价值创造",
