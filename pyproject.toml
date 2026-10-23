@@ -3,7 +3,9 @@ name = "lifeplan"
 version = "0.1.0"
 description = "人生规划系统：把目标变成可核验指标，把判断变成可校准预测"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "tomli>=2.0; python_version < '3.11'",
+]
 
 [project.scripts]
 lifeplan = "lifeplan.cli:main"

@@ -907,6 +907,63 @@ def cmd_qone(args) -> None:
     print("\n  （已写入溯源账本：lifeplan qone list / verify）\n")
 
 
+# ── 首次引导 ────────────────────────────────────────────────
+def cmd_setup(args) -> None:
+    from .setup import apply_setup, generate_template, load, setup_path, validate
+
+    conn = _open()
+    path = setup_path()
+
+    if args.setup_action == "init":
+        if path.exists() and not args.force:
+            _err(f"{path} 已存在。加 --force 重新生成（会覆盖你填的内容）")
+        text = generate_template(conn)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        print(f"\n✓ 已生成引导模板：{path}")
+        print("  编辑它（baseline/target/p 必须你填），然后：lifeplan setup check")
+        print("  规则：系统只提案；数值全部归你——这是 0.725 教训的制度化。\n")
+        return
+
+    if not path.exists():
+        _err(f"{path} 不存在。先 lifeplan setup --init")
+
+    doc = load(path)
+
+    if args.setup_action == "check":
+        errors = validate(doc)
+        n_m = len(doc.get("metrics") or [])
+        n_p = len(doc.get("predictions") or [])
+        print(f"\n校验 {path}：{n_m} 个指标，{n_p} 条预测")
+        if errors:
+            print("  ✗ 还不能应用：")
+            for e in errors:
+                print(f"    · {e}")
+            print()
+            raise SystemExit(1)
+        print("  ✓ 可以应用：lifeplan setup apply\n")
+        return
+
+    # apply
+    errors = validate(doc)
+    if errors:
+        print("\n✗ 拒绝应用（校验未过）：")
+        for e in errors:
+            print(f"    · {e}")
+        print()
+        raise SystemExit(1)
+
+    stat = apply_setup(conn, doc)
+    print(f"\n✓ 已写入：{stat['metrics']} 个指标，{stat['predictions']} 条预测")
+    print("  基线已按目标开始日期冻结——从现在起改它们就是「基线追认」，审计会标红。")
+
+    from .calibration import compute_calibration, load_predictions
+
+    cal = compute_calibration(load_predictions(conn))
+    print(f"\n  当前预测台账：{cal.n_open} 条未结算（到期后 lifeplan resolve 结算）")
+    print("  下一步：lifeplan week（周一见）｜lifeplan qone ask \"…\"（随时问）\n")
+
+
 def cmd_policy(args) -> None:
     from .policy import TIER_LABEL, load_policy, policy_path
 
@@ -1205,6 +1262,17 @@ def build_parser() -> argparse.ArgumentParser:
     c3.add_argument("id", type=int)
     c3.add_argument("--confirm-token", default=None)
     c3.set_defaults(func=cmd_act)
+
+    # ── 首次引导 ──
+    sp = sub.add_parser("setup", help="首次引导：生成提案模板 → 你填数值 → 一条命令应用")
+    gs = sp.add_subparsers(dest="setup_action", required=True)
+    s1 = gs.add_parser("init", help="生成 ~/.lifeplan/setup.yaml（提案，数值留空）")
+    s1.add_argument("--force", action="store_true", help="覆盖已有文件")
+    s1.set_defaults(func=cmd_setup)
+    s2 = gs.add_parser("check", help="只校验，不写入")
+    s2.set_defaults(func=cmd_setup)
+    s3 = gs.add_parser("apply", help="校验并写入指标与预测")
+    s3.set_defaults(func=cmd_setup)
 
     # ── Q-One ──
     sp = sub.add_parser("qone", help="Q-One：万物量化协议（测量→证据→计算→裁决→台账）")
