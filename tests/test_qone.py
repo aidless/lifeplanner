@@ -59,6 +59,7 @@ class TestLedger(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         os.environ["LIFEPLAN_HOME"] = self.tmp.name
+        os.environ["LIFEPLAN_QCOMPILER"] = "rules"  # 测试不打网络
         from lifeplan.db import init_db
 
         self.db = init_db()

@@ -442,6 +442,23 @@ class OpenAICompatAdapter(BaseAdapter):
             return Decision(note="调用失败（详见上一条 note）")
         return parse_decision(raw)
 
+    def complete(self, prompt: str, json_mode: bool = True,
+                 max_tokens: int = 900, temperature: float = 0.0) -> str | None:
+        """纯文本补全（量化编译器用）。不参与工具循环，只做一次生成。"""
+        ok, why = self.status()
+        if not ok:
+            self.chosen_note = why
+            return None
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        }
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+        return self._chat(payload)
+
     def _chat(self, payload: dict) -> str | None:
         """发一次请求，带 JSON 模式降级与错误透传。"""
         headers = {"Content-Type": "application/json",

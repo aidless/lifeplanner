@@ -23,6 +23,7 @@ from datetime import date, datetime, timedelta
 
 from . import calc
 from .ledger import DecisionRecord, record, sha256_of
+from .qcompiler import SIGNAL_REGISTRY, compile_with_llm, enabled as llm_enabled, ollama_caller
 
 # ── 问题类型（与 Laya/Jev 的 choice/score/noul 对齐，measure 为本系统扩展）──
 QTYPES = ("measure", "score", "choice", "noul", "forecast", "rank", "abstain")
@@ -61,6 +62,7 @@ class QOneAnswer:
     confidence_forecast: float | None = None  # 预测置信度（未来不确定性）
     evidence_sufficiency: str = "unknown"     # sufficient | medium | insufficient | unknown
     confidence_type: str = "heuristic"        # calibrated | heuristic | none
+    compiled_by: str = "rules"                # rules | llm（量化编译器来源）
 
     def to_contract(self) -> dict:
         """对外 JSON 契约：value/interval/confidence/action/evidence/assumptions/unknowns。"""
@@ -89,6 +91,7 @@ class QOneAnswer:
         out["unknowns"] = self.unknowns
         out["next_measurement"] = self.next_measurement
         out["decided_by"] = self.decided_by
+        out["compiled_by"] = self.compiled_by
         if self.decision_id:
             out["decision_id"] = self.decision_id
         return out
@@ -127,6 +130,38 @@ def qcompile(state: str) -> tuple[str, list[Question], list[str]]:
                  instructions="现有证据是否足以支撑上面的裁决"),
     ]
     return VERTICAL, questions, []
+
+
+def qcompile_auto(state: str) -> tuple[str, list[Question], list[str], str]:
+    """v2 优先（LLM 在信号注册表内选），失败静默回退 v1（规则）。
+
+    返回 (垂直域, 问题集, 未知项, 编译器来源)。
+    """
+    if llm_enabled():
+        try:
+            call = ollama_caller()
+            if call is not None:
+                plan = compile_with_llm(state, call)
+                if plan is not None:
+                    if not plan.get("supported"):
+                        return "unsupported", [], list(plan.get("unknowns") or [
+                            "量化编译器判断：该问题无法映射到现有可测信号"]), "llm"
+                    qs: list[Question] = []
+                    for key in plan.get("measures") or []:
+                        meta = SIGNAL_REGISTRY[key]
+                        qs.append(Question(meta["label"], "measure", meta["unit"],
+                                           instructions=meta["desc"]))
+                    # 补充计划里的非数值问题
+                    for extra in plan.get("extra_questions") or []:
+                        qs.append(Question(extra["qid"], extra["type"],
+                                           criteria=extra.get("criteria"),
+                                           instructions=extra.get("instructions", "")))
+                    return (plan.get("domain") or "project_investment", qs,
+                            list(plan.get("unknowns") or []), "llm")
+        except Exception:
+            pass
+    vert, qs, unk = qcompile(state)
+    return vert, qs, unk, "rules"
 
 
 # ── 证据 Agent ──────────────────────────────────────────────
@@ -329,13 +364,22 @@ def _decide(state: str, signals: dict, values: dict) -> tuple[str, float, str, l
 # ── 主编排 ──────────────────────────────────────────────────
 def ask(state: str, conn, as_of: str | None = None, root=None,
         persist: bool = True) -> QOneAnswer:
-    vertical, questions, unknowns = qcompile(state)
+    vertical, questions, unknowns, compiled_by = qcompile_auto(state)
     if vertical == "unsupported":
+        why = ("量化编译器（LLM）判断该问题无法映射到现有可测信号"
+               if compiled_by == "llm"
+               else "垂直域 v1 只覆盖项目投入决策")
         ans = QOneAnswer(
-            state=state, questions=[], values={}, scores={}, action="need_data",
-            confidence=0.0, evidence=[], assumptions=["垂直域 v1 只覆盖项目投入决策"],
-            unknowns=unknowns, next_measurement="用 v2 的 LLM 编译器拆解这个问题",
-            decided_by="rules",
+            state=state, questions=[], values={}, scores={},
+            action="collect_more_evidence",
+            confidence=0.0, confidence_model=0.0, confidence_evidence=0.0,
+            confidence_forecast=None, evidence_sufficiency="insufficient",
+            evidence=[], assumptions=[why],
+            unknowns=unknowns,
+            next_measurement=("先定义可观测变量与数据来源，再谈数值"
+                              if compiled_by == "llm"
+                              else "用 v2 的 LLM 编译器拆解这个问题"),
+            decided_by="rules", compiled_by=compiled_by,
         )
         if persist:
             record(conn, DecisionRecord(
@@ -383,6 +427,7 @@ def ask(state: str, conn, as_of: str | None = None, root=None,
         evidence_sufficiency=evidence_sufficiency,
         confidence_type=("calibrated" if signals.get("calibration_n", 0) >= 20
                          else "heuristic"),
+        compiled_by=compiled_by,
         evidence=evidence,
         assumptions=[
             "投入强度以 git 提交为代理，不等于价值创造",
