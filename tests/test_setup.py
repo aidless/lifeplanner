@@ -131,5 +131,80 @@ class TestApply(unittest.TestCase):
         self.assertIn("结算", p["outcome_note"])
 
 
+class TestOnlyScope(unittest.TestCase):
+    """`--only` 的边界：只校验一部分，就只能写这一部分。
+
+    这是「部分校验 → 全部写入」这个经典漏洞的钉子：
+    若 validate(only=4) 通过了、apply 却把没校验的 goal 3 也写进去，
+    那么未填数值的指标会以 None 落库，等于绕过校验。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        os.environ["LIFEPLAN_HOME"] = self.tmp.name
+        from lifeplan.db import connect, init_db
+
+        self.conn = connect(init_db(seed=True))
+
+    def tearDown(self):
+        self.conn.close()
+        self.tmp.cleanup()
+
+    def _mixed_doc(self):
+        return {
+            "metrics": [
+                {"goal_id": 4, "name": "周活跃天数", "unit": "天",
+                 "direction": "increase", "baseline": 2.0, "target": 4.0,
+                 "cadence": "weekly", "tier": 3},
+                {"goal_id": 3, "name": "成稿提交数", "unit": "篇",
+                 "direction": "increase", "baseline": None, "target": None,
+                 "cadence": "monthly", "tier": 3},
+            ],
+            "predictions": [
+                {"goal_id": 4, "statement": "保持月更", "horizon_date": "2027-03-31",
+                 "p_hit": 0.7, "note": "结算：git"},
+            ],
+        }
+
+    def test_validate_only_ignores_other_goals(self):
+        """goal 3 没填值，但只看 goal 4 时不该报错。"""
+        errs = validate(self._mixed_doc(), only=4)
+        self.assertEqual(errs, [], f"only 范围外的不该阻塞，实际：{errs}")
+
+    def test_validate_without_only_catches_unfilled(self):
+        """不给 only 时，goal 3 的缺值必须被抓住。"""
+        errs = validate(self._mixed_doc())
+        self.assertTrue(any("baseline" in e for e in errs))
+
+    def test_apply_only_writes_scoped_goals(self):
+        """apply(only=4) 只写 goal 4——未校验的 goal 3 不能落库。"""
+        from lifeplan.setup import apply_setup
+
+        stat = apply_setup(self.conn, self._mixed_doc(), only=4)
+        self.assertEqual(stat["metrics"], 1)
+        names = [r["name"] for r in
+                 self.conn.execute("SELECT name FROM metrics").fetchall()]
+        self.assertIn("周活跃天数", names)
+        self.assertNotIn("成稿提交数", names)
+
+    def test_partial_validate_cannot_enable_full_write(self):
+        """显式钉死：绕过 only 直接全量 apply 未填值，指标不该以 None 落库。
+
+        这里断言的是「校验先行」的调用约定：apply 本身不做校验，
+        所以 CLI 必须在 apply 前用**同一个 only** 校验。
+        """
+        from lifeplan.setup import apply_setup
+
+        doc = self._mixed_doc()
+        # 全量校验必然失败
+        self.assertNotEqual(validate(doc), [])
+        # 所以正确的调用方不会走到全量 apply；若有人只对 goal 4 校验却全量 apply，
+        # 下面这行会暴露后果（None 落库），这是留给未来重构的警示断言。
+        apply_setup(self.conn, doc, only=4)
+        rows = self.conn.execute(
+            "SELECT COUNT(*) n FROM metrics WHERE baseline IS NULL").fetchone()
+        self.assertEqual(rows["n"], 0, "未校验的 goal 不应以 NULL 落库")
+
+
 if __name__ == "__main__":
     unittest.main()

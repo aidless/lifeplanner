@@ -929,12 +929,16 @@ def cmd_setup(args) -> None:
         _err(f"{path} 不存在。先 lifeplan setup --init")
 
     doc = load(path)
+    only = getattr(args, "only", None)
+    scope = f"（只看目标 #{only}）" if only is not None else ""
 
     if args.setup_action == "check":
-        errors = validate(doc)
-        n_m = len(doc.get("metrics") or [])
-        n_p = len(doc.get("predictions") or [])
-        print(f"\n校验 {path}：{n_m} 个指标，{n_p} 条预测")
+        errors = validate(doc, only=only)
+        n_m = len([m for m in (doc.get("metrics") or [])
+                   if only is None or m.get("goal_id") == only])
+        n_p = len([p for p in (doc.get("predictions") or [])
+                   if only is None or p.get("goal_id") == only])
+        print(f"\n校验 {path}{scope}：{n_m} 个指标，{n_p} 条预测")
         if errors:
             print("  ✗ 还不能应用：")
             for e in errors:
@@ -945,7 +949,7 @@ def cmd_setup(args) -> None:
         return
 
     # apply
-    errors = validate(doc)
+    errors = validate(doc, only=only)
     if errors:
         print("\n✗ 拒绝应用（校验未过）：")
         for e in errors:
@@ -953,7 +957,7 @@ def cmd_setup(args) -> None:
         print()
         raise SystemExit(1)
 
-    stat = apply_setup(conn, doc)
+    stat = apply_setup(conn, doc, only=only)
     print(f"\n✓ 已写入：{stat['metrics']} 个指标，{stat['predictions']} 条预测")
     print("  基线已按目标开始日期冻结——从现在起改它们就是「基线追认」，审计会标红。")
 
@@ -1270,8 +1274,12 @@ def build_parser() -> argparse.ArgumentParser:
     s1.add_argument("--force", action="store_true", help="覆盖已有文件")
     s1.set_defaults(func=cmd_setup)
     s2 = gs.add_parser("check", help="只校验，不写入")
+    s2.add_argument("--only", type=int, default=None,
+                    help="只校验某个目标（goal id）；其余目标没填的数值不阻塞")
     s2.set_defaults(func=cmd_setup)
     s3 = gs.add_parser("apply", help="校验并写入指标与预测")
+    s3.add_argument("--only", type=int, default=None,
+                    help="只写入某个目标（goal id）；与 check --only 配合，逐目标推进")
     s3.set_defaults(func=cmd_setup)
 
     # ── Q-One ──

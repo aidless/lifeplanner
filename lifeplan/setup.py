@@ -43,9 +43,13 @@ GOAL_METRIC_HINTS = [
     (("写作", "产出", "文章"), [
         ("新稿发布数", "篇", "increase", "monthly", 3),
     ]),
+    # 开源：以「持续活跃」为主，不以「被合并 PR 数」为主。
+    # 理由：外部 PR 合并受维护者响应速度支配，不是自己能控的变量；
+    # 把不可控变量当主指标 = 代理反噬。活跃度是自己可控、且可核验的。
     (("开源", "社区贡献", "PR"), [
-        ("合并的外部 PR 数", "个", "increase", "monthly", 3),
-        ("有效提交数", "次", "increase", "weekly", 2),
+        ("周活跃天数", "天", "increase", "weekly", 3),
+        ("发布次数", "次", "increase", "monthly", 3),
+        ("合并的外部 PR 数", "个", "increase", "quarterly", 3),
     ]),
 ]
 
@@ -57,8 +61,11 @@ EXTERNAL_ANCHORS = {
     "有效投递数": ("参考类：你自己历史周投递量（本库无观测时留空，不猜）", ),
     "面试转化率": ("参考类：面试数 ÷ 定制投递数；行业基准不可直接搬用", ),
     "成稿提交数": ("参考类：你的既有成稿储备（库存文件数，可数）", ),
-    "合并的外部 PR 数": ("参考类：过去 12 个月你向他人项目提过几次 PR、合并几次", ),
-    "有效提交数": ("参考类：你既有的周提交量（本库无观测时留空）", ),
+    "合并的外部 PR 数": ("参考类：过去 12 个月你向他人项目提过几次 PR、合并几次"
+                        "（受维护者响应速度支配，不是自己可控——所以只作副指标）", ),
+    "周活跃天数": ("口径：git 提交 / issue / review / release 任一发生记为活跃；"
+                "target 建议取「能长期维持」而非「拼一周」", ),
+    "发布次数": ("参考类：过去 12 个月自己项目的 release / 版本 tag 数（可数）", ),
 }
 
 # (statement, horizon, 结算标准, 目标匹配关键词)
@@ -68,8 +75,11 @@ BIG_DECISIONS = [
      "结算标准：Kaggle 公榜页面（tier3）", ("奖牌", "竞赛", "CASMI", "最佳分")),
     ("完成 TMLR 首投（≥1 篇，approval-gates 或 agent-effort）", "2027-03-31",
      "结算标准：投稿系统确认邮件（tier3）", ("TMLR", "投稿", "首投")),
-    ("向他人项目提交的 PR 至少 1 个被合并（非自己项目）", "2027-03-31",
-     "结算标准：目标仓库的 PR 页面显示 merged（tier3）",
+    ("开源项目保持对外可见的持续更新（≥1 次/月）至 2027-03-31", "2027-03-31",
+     "结算标准：自己的仓库在 2027-01~03 每月至少有 1 次公开提交/release（tier3）",
+     ("开源", "社区贡献", "社区")),
+    ("向他人项目提交的 PR 至少 1 个被合并（非自己项目）", "2027-06-30",
+     "结算标准：目标仓库的 PR 页面显示 merged（tier3）；受他方响应影响，故放宽期限",
      ("开源", "社区贡献", "社区")),
 ]
 
@@ -165,10 +175,20 @@ def load(path: Path) -> dict:
         return tomllib.load(f)
 
 
-def validate(doc: dict) -> list[str]:
+def validate(doc: dict, only: int | None = None) -> list[str]:
+    """校验模板。only=goal_id 时只校验该目标下的条目。
+
+    为什么需要 only：一次只想推进一个目标时，其余目标没填的数值不该挡住它。
+    但「只校验一部分」的代价是可能漏掉整体冲突，所以调用方必须显式声明 only，
+    且 apply 时也只写这部分——不允许「部分校验、全部写入」。
+    """
     errors: list[str] = []
-    metrics = doc.get("metrics") or []
-    if not metrics:
+
+    def _keep(item) -> bool:
+        return only is None or item.get("goal_id") == only
+
+    metrics = [m for m in (doc.get("metrics") or []) if _keep(m)]
+    if not metrics and only is None:
         errors.append("metrics 为空——至少要定义一个指标")
     for i, m in enumerate(metrics, 1):
         for field in ("goal_id", "name", "unit", "direction", "baseline", "target"):
@@ -181,8 +201,8 @@ def validate(doc: dict) -> list[str]:
                 errors.append(f"metrics[{i}] increase 型要求 target > baseline")
             if d == "decrease" and m["target"] >= m["baseline"]:
                 errors.append(f"metrics[{i}] decrease 型要求 target < baseline")
-    preds = doc.get("predictions") or []
-    if not preds:
+    preds = [p for p in (doc.get("predictions") or []) if _keep(p)]
+    if not preds and only is None:
         errors.append("predictions 为空——至少登记一条预测，否则校准无从开始")
     for i, p in enumerate(preds, 1):
         if p.get("p_hit") is None:
@@ -196,10 +216,13 @@ def validate(doc: dict) -> list[str]:
     return errors
 
 
-def apply_setup(conn, doc: dict) -> dict:
+def apply_setup(conn, doc: dict, only: int | None = None) -> dict:
+    """写入指标与预测。only=goal_id 时只写该目标（与 validate 的 only 必须一致）。"""
     now = datetime.now().isoformat(timespec="seconds")
     n_metrics = n_preds = 0
     for m in doc.get("metrics") or []:
+        if only is not None and m.get("goal_id") != only:
+            continue
         g = conn.execute("SELECT start_date FROM goals WHERE id=?", (m["goal_id"],)).fetchone()
         baseline_at = g[0] if g else date.today().isoformat()
         conn.execute(
@@ -213,6 +236,8 @@ def apply_setup(conn, doc: dict) -> dict:
         )
         n_metrics += 1
     for p in doc.get("predictions") or []:
+        if only is not None and p.get("goal_id") != only:
+            continue
         conn.execute(
             """INSERT INTO predictions(goal_id, horizon_date, p_hit, statement, created_at,
                                        outcome, evidence_ref, outcome_note)
