@@ -198,14 +198,14 @@ def seed_all(conn) -> None:
             (metric_id, value, obs_date, note, ref, tier, now),
         )
 
-    add_obs(m1, 6, 35, 2, "applications.csv", "第一周")
-    add_obs(m1, 9, 28, 2, "applications.csv", "第二周")
-    add_obs(m1, 5, 21, 2, "applications.csv", "第三周，节奏回落")
-    add_obs(m1, 11, 14, 3, "https://example.com/tracker", "持续投递中")
-    add_obs(m1, 8, 7, 3, "https://example.com/tracker", "近一周")
-    add_obs(m2, 4, 14, 2, "interview-log.md", "有 4 次进入面试环节")
-    add_obs(m3, 0.47, 21, 3, "contest.csv", "早期提交")
-    add_obs(m3, 0.45, 7, 3, "contest.csv", "当前最佳")
+    add_obs(m1, 13, 35, 2, "applications.csv", "第一周")
+    add_obs(m1, 17, 28, 2, "applications.csv", "第二周")
+    add_obs(m1, 14, 21, 2, "applications.csv", "第三周，节奏回落")
+    add_obs(m1, 22, 14, 3, "https://example.com/tracker", "持续投递中")
+    add_obs(m1, 19, 7, 3, "https://example.com/tracker", "近一周")
+    add_obs(m2, 9, 14, 2, "interview-log.md", "有 9 次进入面试环节")
+    add_obs(m3, 0.53, 21, 3, "contest.csv", "早期提交")
+    add_obs(m3, 0.51, 7, 3, "contest.csv", "当前最佳")
     add_obs(m4, 40, 14, 2, "interview-log.md", "复盘覆盖 40%")
 
     # 睡眠 / 运动 / 熬夜
