@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # 本项目零第三方依赖，所以不需要 pip install
+      - name: 语法检查
+        run: python -m compileall -q lifeplan
+
+      - name: 单元测试
+        run: python -m unittest discover -s tests -v
+        env:
+          # 测试内部会用临时目录覆盖它，这里只是保证不会写到 ~/.lifeplan
+          LIFEPLAN_HOME: /tmp/lifeplan-ci
+
+      - name: 端到端冒烟
+        run: |
+          export LIFEPLAN_HOME=/tmp/lifeplan-smoke
+          rm -rf "$LIFEPLAN_HOME"
+          python -m lifeplan init --seed
+          python -m lifeplan score
+          python -m lifeplan week --plan-only
+          python -m lifeplan report --out /tmp/report.md
+          python -m lifeplan dashboard --out /tmp/dashboard.html
+          python -m lifeplan doctor
+          test -s /tmp/report.md
+          test -s /tmp/dashboard.html

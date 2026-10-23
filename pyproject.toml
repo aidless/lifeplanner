@@ -1,0 +1,19 @@
+[project]
+name = "lifeplan"
+version = "0.1.0"
+description = "人生规划系统：把目标变成可核验指标，把判断变成可校准预测"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+lifeplan = "lifeplan.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["lifeplan", "lifeplan.agent"]
+
+[tool.setuptools.package-data]
+lifeplan = ["schema.sql"]
