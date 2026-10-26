@@ -53,6 +53,7 @@ class TestEndToEnd(unittest.TestCase):
         self.assertIn("人生规划系统", text)
         self.assertIn("证据置信度", text)
         self.assertIn("不可量化登记", text)
+        self.assertIn("偏差 = 预测 − 实际，为正说明偏乐观", text)
         conn.close()
 
     def test_dashboard_renders_offline(self):
@@ -62,6 +63,13 @@ class TestEndToEnd(unittest.TestCase):
         html = render_dashboard(conn)
         self.assertIn("<svg", html)
         self.assertIn("示例数据 · 虚构画像 · 只读", html)
+        self.assertRegex(
+            html,
+            r'<td class="num">0\.70</td><td class="num">0\.00</td>'
+            r'<td class="num" style="color:[^"]+">\+0\.70</td>',
+            "分箱偏差必须与过度自信度同向（预测 − 实际）",
+        )
+        self.assertIn(">+0.169<", html)
         self.assertFalse(
             re.search(r'(src|href)="https?://', html),
             "看板不得引用任何外部资源",

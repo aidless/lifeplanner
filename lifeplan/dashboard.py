@@ -247,7 +247,7 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
         for b in cal.bins:
             if b.count == 0 or b.mean_p is None:
                 continue
-            gap = b.accuracy - b.mean_p
+            gap = b.mean_p - b.accuracy
             color = PALETTE["good"] if abs(gap) < 0.1 else (PALETTE["warn"] if abs(gap) < 0.25 else PALETTE["bad"])
             cal_rows.append(
                 f'<tr><td class="num">{b.mean_p:.2f}</td><td class="num">{b.accuracy:.2f}</td>'
@@ -259,9 +259,10 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
         <div>
           <div class="verdict">{_esc(cal.verdict)}</div>
           <table class="mini">
-            <thead><tr><th>预测</th><th>实际</th><th>偏差</th><th>n</th></tr></thead>
+            <thead><tr><th>预测</th><th>实际</th><th>偏差 p−实际</th><th>n</th></tr></thead>
             <tbody>{''.join(cal_rows) or '<tr><td colspan="4" class="muted">无数据</td></tr>'}</tbody>
           </table>
+          <p class="muted small">偏差 = 预测概率 − 实际兑现率；正值表示高估。</p>
         </div>
       </div>"""
     else:

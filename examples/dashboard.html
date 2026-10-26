@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>人生规划系统 · 2026-10-22</title>
+<title>人生规划系统 · 2026-10-25</title>
 <style>
   :root {
     --bg:#f8f9fb; --card:#ffffff; --border:#e4e7ec;
@@ -17,6 +17,7 @@
     }
   }
   * { box-sizing:border-box; }
+  svg { max-width:100%; height:auto; }
   body { margin:0; padding:32px 20px 60px; background:var(--bg); color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
     line-height:1.55; }
@@ -32,6 +33,10 @@
   .num { font-variant-numeric:tabular-nums; text-align:right; }
   .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
     padding:18px 20px; margin-bottom:16px; }
+  .demo-banner { margin-bottom:16px; padding:10px 14px; border-radius:8px;
+    background:rgba(245,159,0,.12); border:1px solid rgba(245,159,0,.38);
+    color:#8a5a00; font-size:13px; line-height:1.5; }
+  .demo-banner strong { letter-spacing:.02em; }
   .top { display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:center; }
   .kpis { flex:2 1 560px; display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
     gap:10px; }
@@ -63,17 +68,23 @@
   .uq-list span { display:block; font-size:12px; margin-top:2px; }
   .foot { text-align:center; color:var(--muted); font-size:11px; margin-top:28px; }
   @media (max-width:720px) {
+    body { padding:20px 12px 40px; }
+    .card { padding:14px; }
     .top,.cal-grid { grid-template-columns:1fr; }
-    .goal-stats { text-align:left; }
+    .goal-stats { text-align:left; gap:12px; }
+    .bar { width:72px; }
+    table { font-size:12px; }
+    th, td { padding:6px 5px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="demo-banner" role="status"><strong>示例数据 · 虚构画像 · 只读</strong>　本库带种子标记（2026-10-26 03:52 UTC），不是真实用户记录。</div>
   <header>
     <div class="brand">
       <h1>人生规划系统</h1>
-      <div class="muted small">万事万物皆可量化 —— 但不可核验的量化，只值一半分。　统计截止 2026-10-22</div>
+      <div class="muted small">万事万物皆可量化 —— 但不可核验的量化，只值一半分。　统计截止 2026-10-25</div>
     </div>
     <div class="kpis">
       <div class="kpi"><div class="v">0.2347</div><div class="l">Brier 分数</div></div>
@@ -127,9 +138,10 @@
         <div>
           <div class="verdict">系统性过度自信：说&#x27;能做到&#x27;时更容易做不到</div>
           <table class="mini">
-            <thead><tr><th>预测</th><th>实际</th><th>偏差</th><th>n</th></tr></thead>
-            <tbody><tr><td class="num">0.53</td><td class="num">0.00</td><td class="num" style="color:#e03131">-0.53</td><td class="num">2</td></tr><tr><td class="num">0.62</td><td class="num">1.00</td><td class="num" style="color:#e03131">+0.38</td><td class="num">2</td></tr><tr><td class="num">0.70</td><td class="num">0.00</td><td class="num" style="color:#e03131">-0.70</td><td class="num">2</td></tr><tr><td class="num">0.82</td><td class="num">1.00</td><td class="num" style="color:#f59f00">+0.18</td><td class="num">2</td></tr></tbody>
+            <thead><tr><th>预测</th><th>实际</th><th>偏差 p−实际</th><th>n</th></tr></thead>
+            <tbody><tr><td class="num">0.53</td><td class="num">0.00</td><td class="num" style="color:#e03131">+0.53</td><td class="num">2</td></tr><tr><td class="num">0.62</td><td class="num">1.00</td><td class="num" style="color:#e03131">-0.38</td><td class="num">2</td></tr><tr><td class="num">0.70</td><td class="num">0.00</td><td class="num" style="color:#e03131">+0.70</td><td class="num">2</td></tr><tr><td class="num">0.82</td><td class="num">1.00</td><td class="num" style="color:#f59f00">-0.18</td><td class="num">2</td></tr></tbody>
           </table>
+          <p class="muted small">偏差 = 预测概率 − 实际兑现率；正值表示高估。</p>
         </div>
       </div>
   </section>
@@ -443,7 +455,7 @@
     <section class="card">
       <h3>待结算预测（2）</h3>
       <table class="mini"><thead><tr><th>ID</th><th>陈述</th><th>p</th><th>到期</th></tr></thead>
-      <tbody><tr><td class="num">#9</td><td>20 天内发布 2 篇新稿</td><td class="num">0.75</td><td class="muted">2026-11-11</td></tr><tr><td class="num">#10</td><td>45 天内拿到 offer</td><td class="num">0.45</td><td class="muted">2026-12-06</td></tr></tbody></table>
+      <tbody><tr><td class="num">#9</td><td>20 天内发布 2 篇新稿</td><td class="num">0.75</td><td class="muted">2026-11-14</td></tr><tr><td class="num">#10</td><td>45 天内拿到 offer</td><td class="num">0.45</td><td class="muted">2026-12-09</td></tr></tbody></table>
     </section>
   
     <section class="card">

@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>lifeplan · 计划会骗你，结算不会</title>
-  <meta name="description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，零依赖，单文件看板。" />
+  <meta name="description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.11+ 零依赖，单文件看板。" />
   <meta name="theme-color" content="#eef0ea" />
   <meta property="og:title" content="lifeplan · 计划会骗你，结算不会" />
-  <meta property="og:description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，零依赖。" />
+  <meta property="og:description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.11+ 零依赖。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://aidless.github.io/lifeplanner/" />
   <meta property="og:image" content="https://aidless.github.io/lifeplanner/assets/og.png" />
@@ -49,7 +49,7 @@
           <a class="btn" href="demo/dashboard.html" target="_blank" rel="noopener">看示例看板（虚构数据）</a>
           <a class="btn btn-ghost" href="#start">3 分钟跑起来</a>
         </div>
-        <p class="fineprint">本地优先 · 零依赖 · 无账号 · 示例数据为虚构画像</p>
+        <p class="fineprint">本地优先 · 3.11+ 零依赖 · 无账号 · 虚构示例</p>
       </div>
 
       <aside class="sheet" id="settlement" data-mode="after" aria-label="示例结算单">
@@ -182,13 +182,36 @@
 
     <section class="band" id="board">
       <div class="section-head section-head--stack">
-        <h2>看板不是仪表盘，是一张账单。</h2>
+        <h2>看板不是<span class="nowrap">仪表盘</span>，是一张账单。</h2>
         <p>看板先给你校准，再给你自我评分。前者由到期结算决定，改不了；后者由 baseline / target 决定，可以改。</p>
       </div>
-      <figure class="shot">
-        <img src="assets/dashboard-proof.png" width="2880" height="1550" alt="lifeplan 示例看板的校准区：顶部是 Brier、ECE、过度自信度，下面是可靠性曲线和分箱结算表" />
+      <figure class="shot shot-desktop">
+        <a class="shot-link" href="demo/dashboard.html" target="_blank" rel="noopener">
+          <img src="assets/dashboard-proof.png" width="2880" height="1550" alt="lifeplan 示例看板的校准区：顶部是 Brier、ECE、过度自信度，下面是可靠性曲线和分箱结算表" />
+          <span class="shot-open">打开完整看板 ↗</span>
+        </a>
         <figcaption>示例数据（虚构画像）· 校准区 2x 截取</figcaption>
       </figure>
+      <div class="proof-mobile">
+        <div class="proof-kpis">
+          <span><b>0.2347</b>Brier</span>
+          <span><b>0.4438</b>ECE</span>
+          <span><b>+0.169</b>过度自信</span>
+          <span><b>8</b>已结算</span>
+        </div>
+        <table>
+          <caption>示例看板 · 四个预测分箱</caption>
+          <thead><tr><th scope="col">预测</th><th scope="col">实际</th><th scope="col">偏差 p−实际</th><th scope="col">n</th></tr></thead>
+          <tbody>
+            <tr><td>0.53</td><td>0.00</td><td class="over">+0.53</td><td>2</td></tr>
+            <tr><td>0.62</td><td>1.00</td><td class="under">−0.38</td><td>2</td></tr>
+            <tr><td>0.70</td><td>0.00</td><td class="over">+0.70</td><td>2</td></tr>
+            <tr><td>0.82</td><td>1.00</td><td class="under">−0.18</td><td>2</td></tr>
+          </tbody>
+        </table>
+        <a class="proof-link" href="demo/dashboard.html" target="_blank" rel="noopener">打开完整看板 ↗</a>
+        <p class="proof-note">示例数据（虚构画像）· 与看板同源</p>
+      </div>
       <dl class="notes">
         <div><dt>校准在前</dt><dd>Brier、ECE、过度自信度是主指标；它们由到期结算决定，不由你今天的心情决定。</dd></div>
         <div><dt>价值分只作参考</dt><dd>baseline 和 target 由人填写，改一下 target 就能改分数，所以它只可纵向自比。</dd></div>

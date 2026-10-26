@@ -55,7 +55,7 @@ class Bin:
     count: int
     mean_p: float
     accuracy: float
-    gap: float  # accuracy - mean_p, 正值代表过于保守
+    gap: float  # mean_p - accuracy, 正值代表过度自信
 
 
 @dataclass
@@ -158,7 +158,7 @@ def compute_calibration(predictions: list[Prediction]) -> CalibrationReport:
         if group:
             mp = sum(p.p_hit for p in group) / len(group)
             ac = sum(p.outcome for p in group) / len(group)
-            gap = ac - mp
+            gap = mp - ac
             ece += (len(group) / len(resolved)) * abs(gap)
             mce = max(mce, abs(gap))
         else:

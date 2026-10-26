@@ -94,12 +94,12 @@ def _calibration_section(add, cal) -> None:
     # 可靠曲线（分箱）
     filled = [b for b in cal.bins if b.count > 0 and b.mean_p is not None]
     if filled:
-        add("**可靠性分箱**（预测区间 → 实际命中率；偏差为正说明偏保守，为负说明偏乐观）：")
+        add("**可靠性分箱**（预测区间 → 实际命中率；偏差 = 预测 − 实际，为正说明偏乐观，为负说明偏保守）：")
         add("")
         add("| 预测区间 | n | 平均预测 | 实际命中 | 偏差 |")
         add("|---|---|---|---|---|")
         for b in filled:
-            gap = b.accuracy - b.mean_p
+            gap = b.mean_p - b.accuracy
             add(f"| {b.lower:.1f}–{b.upper:.1f} | {b.count} | {b.mean_p:.2f} | "
                 f"{b.accuracy:.2f} | {gap:+.2f} |")
         add("")

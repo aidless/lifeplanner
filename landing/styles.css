@@ -48,6 +48,8 @@ code, .mono {
   font-variant-numeric: tabular-nums;
 }
 
+.nowrap { white-space: nowrap; }
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -209,6 +211,7 @@ h1 {
 
 .fineprint {
   margin: 0;
+  text-wrap: balance;
   font-size: 12px;
   letter-spacing: 0.02em;
   color: var(--muted);
@@ -501,6 +504,42 @@ h2 {
   border: 1px solid var(--rule-strong);
   box-shadow: var(--shadow);
 }
+
+.shot-link { display: block; position: relative; text-decoration: none; }
+.shot-link img { display: block; width: 100%; height: auto; }
+.shot-link:hover .shot-open { background: var(--blue-ink); }
+.shot-open {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--paper-2);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.proof-mobile { display: none; }
+.proof-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 14px 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.proof-kpis b { margin-right: 5px; color: var(--ink); font-size: 15px; }
+.proof-mobile table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+.proof-mobile caption { padding-bottom: 8px; text-align: left; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.proof-mobile th { padding: 6px 4px; border-bottom: 1px solid var(--ink); text-align: left; font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--muted); }
+.proof-mobile td { padding: 8px 4px; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.proof-mobile .over { color: var(--red); font-weight: 700; }
+.proof-mobile .under { color: var(--blue-ink); }
+.proof-link { display: inline-block; margin-top: 8px; color: var(--ink); font-size: 14px; text-underline-offset: 4px; }
+.proof-note { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+
 .shot img { display: block; width: 100%; height: auto; }
 .shot figcaption {
   padding: 8px 4px 2px;
@@ -695,6 +734,8 @@ h2 {
   .notes > div { grid-template-columns: 1fr; gap: 6px; }
   .ledger th { width: 96px; padding-right: 12px; }
   .shot { padding: 5px; }
+  .shot-desktop { display: none; }
+  .proof-mobile { display: block; }
   .terminal pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   .sheet { padding: 20px; }
   .sheet-title { font-size: 21px; }
