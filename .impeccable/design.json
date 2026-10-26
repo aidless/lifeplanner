@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "name": "lifeplan landing",
+  "northStar": "A personal calibration statement: completion is not calibration, and the settlement is the proof.",
+  "shadows": {
+    "contact": "0 1px 0 rgba(20, 23, 26, 0.04)"
+  },
+  "motion": {
+    "sheetIn": "620ms cubic-bezier(0.16, 1, 0.3, 1)",
+    "modeToggle": "240ms ease",
+    "pointsFade": "300ms ease"
+  },
+  "breakpoints": {
+    "tablet": "980px",
+    "mobile": "760px",
+    "small": "420px"
+  },
+  "rules": [
+    "One demonstration per viewport: the settlement sheet.",
+    "Synthetic demo data is labeled wherever it appears.",
+    "No claim without a carrier in PRODUCT.md.",
+    "Functional text floor: 11px; captions and notes: 12px.",
+    "Flat paper surfaces; rules carry structure."
+  ],
+  "do": [
+    "Show the 事前/结算后 toggle as the signature interaction.",
+    "Use the real generated dashboard screenshot and its numbers.",
+    "Keep the first viewport to headline + one paragraph + two actions + the sheet."
+  ],
+  "dont": [
+    "No gradient text, glass, colored left borders, or hard offset shadows.",
+    "No eyebrow above the heading.",
+    "No icon-plus-heading-plus-text card grid as the page structure.",
+    "No invented users, testimonials, stars, or benchmarks."
+  ]
+}

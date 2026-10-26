@@ -132,6 +132,7 @@ class TestDashboardRobustness(unittest.TestCase):
             html = render_dashboard(conn)
             self.assertIn("<svg", html)
             self.assertIn("—", html, "缺失的校准指标应显示为破折号")
+            self.assertNotIn("虚构画像", html, "空库看板不应带示例数据横幅")
             conn.close()
         finally:
             tmp.cleanup()

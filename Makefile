@@ -1,4 +1,4 @@
-.PHONY: help test check demo week report dashboard backup doctor clean
+.PHONY: help test check demo week report dashboard backup doctor site clean
 
 PY ?= python3
 
@@ -9,6 +9,7 @@ help:
 	@echo "make week      每周复盘（需要交互）"
 	@echo "make report    生成周报 examples/report.md"
 	@echo "make dashboard 生成看板 examples/dashboard.html"
+	@echo "make site      构建落地页 + 示例看板到 dist/"
 	@echo "make backup    备份数据库"
 	@echo "make doctor    系统体检"
 
@@ -33,6 +34,9 @@ report:
 dashboard:
 	@mkdir -p examples
 	$(PY) -m lifeplan dashboard --out examples/dashboard.html
+
+site:
+	$(PY) scripts/build_site.py
 
 backup:
 	$(PY) -m lifeplan backup

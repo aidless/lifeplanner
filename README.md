@@ -8,6 +8,10 @@
 零依赖、纯 Python 标准库、单文件 SQLite、单文件离线 HTML 看板。
 所有数据留在本地，不上传任何地方。
 
+**在线体验：** [落地页](https://aidless.github.io/lifeplanner/) · [示例看板](https://aidless.github.io/lifeplanner/demo/dashboard.html)（示例数据为虚构画像，不是真实用户记录）
+
+![lifeplan 示例看板](landing/assets/dashboard-desktop.png)
+
 ---
 
 ## 为什么不是一个普通的目标追踪器
@@ -73,6 +77,19 @@ overconfidence = mean(p_hit) − mean(outcome) # 正值 = 系统性过度自信
 ---
 
 ## 快速开始
+
+### 先看效果（约 3 秒）
+
+```bash
+git clone https://github.com/aidless/lifeplanner.git
+cd lifeplanner
+make demo        # 写入临时目录，不碰你的真实数据
+# 浏览器打开 /tmp/lifeplan-demo/dashboard.html
+```
+
+也可以直接打开[在线示例看板](https://aidless.github.io/lifeplanner/demo/dashboard.html)，不安装任何东西。
+
+### 真正开始用
 
 ```bash
 cd lifeplanner
@@ -487,11 +504,12 @@ lifeplan restore --from ~/lifeplan-backup.db --force
 ## 工程化
 
 ```bash
-make test        # 119 项测试
+make test        # 190 项测试
 make check       # 语法检查 + 死代码扫描
 make demo        # 临时目录跑完整流程
 make report      # 生成 examples/report.md
 make dashboard   # 生成 examples/dashboard.html
+make site        # 构建落地页 + 示例看板到 dist/
 make backup      # 备份数据库
 make doctor      # 系统体检
 ```

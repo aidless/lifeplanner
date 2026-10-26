@@ -11,7 +11,7 @@ import json
 from datetime import date
 
 from .calibration import compute_calibration, load_predictions
-from .db import rows
+from .db import get_meta, rows
 from .evidence import tier_label
 from .metrics import build_snapshot
 
@@ -176,6 +176,16 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
     snap = build_snapshot(conn, as_of)
     preds = load_predictions(conn)
     cal = compute_calibration(preds)
+    seeded_at = get_meta(conn, "seeded_at", "")
+    banner_html = ""
+    if seeded_at:
+        seed_label = seeded_at.replace("T", " ")[:16]
+        banner_html = (
+            '<div class="demo-banner" role="status">'
+            "<strong>示例数据 · 虚构画像 · 只读</strong>"
+            f"　本库带种子标记（{_esc(seed_label)} UTC），不是真实用户记录。"
+            "</div>"
+        )
     budget_rows = rows(conn, """
         SELECT b.*, d.name AS domain_name FROM budget b JOIN domains d ON d.id=b.domain_id
         WHERE b.week_start=(SELECT MAX(week_start) FROM budget) ORDER BY d.sort_order""")
@@ -329,6 +339,7 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
     }}
   }}
   * {{ box-sizing:border-box; }}
+  svg {{ max-width:100%; height:auto; }}
   body {{ margin:0; padding:32px 20px 60px; background:var(--bg); color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
     line-height:1.55; }}
@@ -344,6 +355,10 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
   .num {{ font-variant-numeric:tabular-nums; text-align:right; }}
   .card {{ background:var(--card); border:1px solid var(--border); border-radius:12px;
     padding:18px 20px; margin-bottom:16px; }}
+  .demo-banner {{ margin-bottom:16px; padding:10px 14px; border-radius:8px;
+    background:rgba(245,159,0,.12); border:1px solid rgba(245,159,0,.38);
+    color:#8a5a00; font-size:13px; line-height:1.5; }}
+  .demo-banner strong {{ letter-spacing:.02em; }}
   .top {{ display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:center; }}
   .kpis {{ flex:2 1 560px; display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
     gap:10px; }}
@@ -375,13 +390,19 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
   .uq-list span {{ display:block; font-size:12px; margin-top:2px; }}
   .foot {{ text-align:center; color:var(--muted); font-size:11px; margin-top:28px; }}
   @media (max-width:720px) {{
+    body {{ padding:20px 12px 40px; }}
+    .card {{ padding:14px; }}
     .top,.cal-grid {{ grid-template-columns:1fr; }}
-    .goal-stats {{ text-align:left; }}
+    .goal-stats {{ text-align:left; gap:12px; }}
+    .bar {{ width:72px; }}
+    table {{ font-size:12px; }}
+    th, td {{ padding:6px 5px; }}
   }}
 </style>
 </head>
 <body>
 <div class="wrap">
+  {banner_html}
   <header>
     <div class="brand">
       <h1>人生规划系统</h1>

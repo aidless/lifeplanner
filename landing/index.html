@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>lifeplan · 计划会骗你，结算不会</title>
+  <meta name="description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，零依赖，单文件看板。" />
+  <meta name="theme-color" content="#eef0ea" />
+  <meta property="og:title" content="lifeplan · 计划会骗你，结算不会" />
+  <meta property="og:description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，零依赖。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aidless.github.io/lifeplanner/" />
+  <meta property="og:image" content="https://aidless.github.io/lifeplanner/assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://aidless.github.io/lifeplanner/assets/og.png" />
+  <link rel="canonical" href="https://aidless.github.io/lifeplanner/" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+  <script src="landing.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="masthead">
+    <a class="brand" href="#top" aria-label="lifeplan · 回到顶部">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M6 25.5h20M6 6.5v19M10 20.5l5-5 4 3 6-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-text"><strong>lifeplan</strong><small>个人校准对账</small></span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="#why">为什么</a>
+      <a href="#how">怎么用</a>
+      <a href="#board">看板</a>
+      <a href="#privacy">数据在哪</a>
+      <a href="#faq">常见问题</a>
+    </nav>
+    <a class="btn btn-small" href="demo/dashboard.html" target="_blank" rel="noopener">打开示例看板</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <h1>计划会骗你。<br><span class="mark">结算不会。</span></h1>
+        <p class="outcome-line"><span class="outcome-tag">示例</span><span class="mono">p = 0.70</span> → <strong>未兑现</strong> · 偏差 <span class="neg">+0.70</span></p>
+        <p class="lede">lifeplan 把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。它不催你打卡，只在你高估自己的时候，把账算给你看。</p>
+        <div class="actions">
+          <a class="btn" href="demo/dashboard.html" target="_blank" rel="noopener">看示例看板（虚构数据）</a>
+          <a class="btn btn-ghost" href="#start">3 分钟跑起来</a>
+        </div>
+        <p class="fineprint">本地优先 · 零依赖 · 无账号 · 示例数据为虚构画像</p>
+      </div>
+
+      <aside class="sheet" id="settlement" data-mode="after" aria-label="示例结算单">
+        <div class="sheet-top">
+          <div class="doc-meta"><span>SETTLEMENT</span><span>2026-09 / #04</span></div>
+          <div class="toggle" role="group" aria-label="查看结算前后">
+            <span class="toggle-label">查看</span>
+            <button type="button" data-mode-btn="before" aria-pressed="false">事前</button>
+            <button type="button" data-mode-btn="after" aria-pressed="true">结算后</button>
+          </div>
+        </div>
+        <h2 class="sheet-title">一条预测的账</h2>
+        <p class="toggle-hint">切换「事前 / 结算后」，看这条预测有没有兑现。</p>
+        <dl class="rows">
+          <div><dt>预测</dt><dd class="mono">p = 0.70</dd></div>
+          <div><dt>陈述</dt><dd>本月完成 12 次有效提交</dd></div>
+          <div><dt>到期</dt><dd class="mono">2026-09-30</dd></div>
+          <div><dt>结算</dt><dd><span class="after">0 / 1 兑现</span><span class="before">等待到期</span></dd></div>
+          <div><dt>偏差</dt><dd><span class="after neg">+0.70 · 高估</span><span class="before">—</span></dd></div>
+        </dl>
+
+        <figure class="chart">
+          <svg viewBox="0 0 320 240" role="img" aria-label="可靠性曲线：四组事前预测概率与到期实际兑现率的对比">
+            <g class="grid" aria-hidden="true">
+              <line x1="40" y1="200" x2="300" y2="200"/>
+              <line x1="40" y1="155" x2="300" y2="155"/>
+              <line x1="40" y1="110" x2="300" y2="110"/>
+              <line x1="40" y1="65" x2="300" y2="65"/>
+              <line x1="40" y1="20" x2="300" y2="20"/>
+              <line x1="40" y1="200" x2="40" y2="20"/>
+              <line x1="105" y1="200" x2="105" y2="20"/>
+              <line x1="170" y1="200" x2="170" y2="20"/>
+              <line x1="235" y1="200" x2="235" y2="20"/>
+              <line x1="300" y1="200" x2="300" y2="20"/>
+            </g>
+            <line class="diagonal" x1="40" y1="200" x2="300" y2="20"/>
+            <g class="axis" aria-hidden="true">
+              <text x="40" y="222">0</text>
+              <text x="105" y="222">.25</text>
+              <text x="170" y="222">.50</text>
+              <text x="235" y="222">.75</text>
+              <text x="300" y="222">1</text>
+              <text x="32" y="204" text-anchor="end">0</text>
+              <text x="32" y="159" text-anchor="end">.25</text>
+              <text x="32" y="114" text-anchor="end">.50</text>
+              <text x="32" y="69" text-anchor="end">.75</text>
+              <text x="32" y="24" text-anchor="end">1</text>
+            </g>
+            <text class="axis-title" x="170" y="238" text-anchor="middle">事前预测概率</text>
+            <text class="axis-title" x="12" y="110" text-anchor="middle" transform="rotate(-90 12 110)">实际兑现率</text>
+            <g class="points" aria-hidden="true">
+              <circle class="marker-ring" cx="222" cy="200" r="11"/>
+              <text class="marker-label" x="222" y="183" text-anchor="middle">本条</text>
+              <circle cx="178" cy="200" r="5"><title>预测 0.53 → 实际 0.00（n=2）</title></circle>
+              <circle cx="201" cy="20" r="5"><title>预测 0.62 → 实际 1.00（n=2）</title></circle>
+              <circle cx="222" cy="200" r="5"><title>预测 0.70 → 实际 0.00（n=2）</title></circle>
+              <circle cx="253" cy="20" r="5"><title>预测 0.82 → 实际 1.00（n=2）</title></circle>
+            </g>
+            <text class="wait-label" x="170" y="112" text-anchor="middle">等待结算</text>
+          </svg>
+          <figcaption><span class="after">每格 n=2 · 示例数据（虚构）</span><span class="before">到期结算后才会出现散点</span></figcaption>
+          <p class="sr-only after">四个分箱：预测 0.53 实际 0.00；预测 0.62 实际 1.00；预测 0.70 实际 0.00；预测 0.82 实际 1.00。每格 2 条预测。</p>
+          <p class="sr-only before">尚未结算：当前只有预测 p=0.70 和到期日；到期后才会显示实际兑现率。</p>
+        </figure>
+
+        <div class="sheet-foot">
+          <span class="after">8 条已结算 · Brier 0.2347 · ECE 0.4438</span>
+          <span class="before">到期后自动结算 · 历史不可改写</span>
+        </div>
+        <div class="stamp" aria-live="polite">
+          <span class="after">系统性高估 +0.169</span>
+          <span class="before">尚未结算</span>
+        </div>
+        <p class="sheet-note">偏差按「预测 − 实际」计算；示例数据来自虚构画像，不是真实用户记录。</p>
+      </aside>
+    </section>
+
+    <section class="band" id="why">
+      <div class="section-head">
+        <h2>完成，不等于做到。</h2>
+        <p>待办清单记录你做了什么；lifeplan 记录你有多了解自己。两件事都重要，但后者很少有人真的量过。</p>
+      </div>
+      <table class="contrast">
+        <caption class="sr-only">普通目标工具与 lifeplan 的差别</caption>
+        <thead>
+          <tr><th scope="col">大多数工具</th><th scope="col">lifeplan</th></tr>
+        </thead>
+        <tbody>
+          <tr><td data-label="大多数工具">打勾就算完成</td><td data-label="lifeplan">完成也要看证据等级：自述、记录、可核验，权重不同</td></tr>
+          <tr><td data-label="大多数工具">一个总分决定今天好不好</td><td data-label="lifeplan">价值分只作参考；校准才是主指标</td></tr>
+          <tr><td data-label="大多数工具">目标没达成就悄悄改基线</td><td data-label="lifeplan">基线冻结，事后追认会被审计检出</td></tr>
+          <tr><td data-label="大多数工具">「我今年一定能上岸」</td><td data-label="lifeplan">写成概率 p，到期结算，用 Brier / ECE 校准</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="band" id="how">
+      <div class="section-head">
+        <h2>每周十分钟，只做三件事。</h2>
+        <p>它不替你决定目标，也不催你执行；它只负责把账算清楚。</p>
+      </div>
+      <ol class="steps">
+        <li>
+          <span class="step-char" aria-hidden="true">写</span>
+          <div class="step-body">
+            <h3>写下可核验的目标</h3>
+            <p>把「变好」拆成指标、baseline 和 target，并冻结基线。</p>
+            <code>lifeplan init</code>
+          </div>
+        </li>
+        <li>
+          <span class="step-char" aria-hidden="true">记</span>
+          <div class="step-body">
+            <h3>每周记录一次观测</h3>
+            <p>标出证据等级：只有一句话，还是有截图、日志或公开链接。</p>
+            <code>lifeplan observe --metric 1 --value 9 --evidence https://…</code>
+          </div>
+        </li>
+        <li>
+          <span class="step-char" aria-hidden="true">结</span>
+          <div class="step-body">
+            <h3>到期结算预测</h3>
+            <p>写下 p，到期填 1 或 0。看板会告诉你，你系统性高估还是低估。</p>
+            <code>lifeplan resolve 4 --hit 0</code>
+          </div>
+        </li>
+      </ol>
+      <p class="steps-note">命令行是目前的录入方式；看板在手机和桌面上都能读。图形化录入还没做，页面不假装它存在。</p>
+    </section>
+
+    <section class="band" id="board">
+      <div class="section-head section-head--stack">
+        <h2>看板不是仪表盘，是一张账单。</h2>
+        <p>看板先给你校准，再给你自我评分。前者由到期结算决定，改不了；后者由 baseline / target 决定，可以改。</p>
+      </div>
+      <figure class="shot">
+        <img src="assets/dashboard-proof.png" width="2880" height="1550" alt="lifeplan 示例看板的校准区：顶部是 Brier、ECE、过度自信度，下面是可靠性曲线和分箱结算表" />
+        <figcaption>示例数据（虚构画像）· 校准区 2x 截取</figcaption>
+      </figure>
+      <dl class="notes">
+        <div><dt>校准在前</dt><dd>Brier、ECE、过度自信度是主指标；它们由到期结算决定，不由你今天的心情决定。</dd></div>
+        <div><dt>价值分只作参考</dt><dd>baseline 和 target 由人填写，改一下 target 就能改分数，所以它只可纵向自比。</dd></div>
+        <div><dt>证据置信度单独列出</dt><dd>「我做了」和「我做了且有可核验记录」拿到的权重不同。</dd></div>
+      </dl>
+    </section>
+
+    <section class="band start" id="start">
+      <div class="section-head section-head--stack">
+        <h2>从空库到第一张结算单。</h2>
+        <p>Python 3.11+，零第三方依赖（3.10 需 <code>tomli</code>）；数据写在 <code>LIFEPLAN_HOME</code> 指定的目录。演示约 3 秒。</p>
+      </div>
+      <div class="terminal">
+        <div class="terminal-head"><span>终端</span><button type="button" class="copy" data-copy="git clone https://github.com/aidless/lifeplanner.git&#10;cd lifeplanner&#10;make demo">复制命令</button></div>
+        <pre><code><span class="prompt">$</span> git clone https://github.com/aidless/lifeplanner.git
+<span class="prompt">$</span> cd lifeplanner
+<span class="prompt">$</span> make demo
+<span class="out">→ /tmp/lifeplan-demo/dashboard.html</span></code></pre>
+      </div>
+      <div class="actions">
+        <a class="btn" href="demo/dashboard.html" target="_blank" rel="noopener">打开示例看板（虚构数据）</a>
+        <a class="btn btn-ghost" href="demo/dashboard.html" download>下载单文件 HTML</a>
+        <a class="btn btn-ghost" href="https://github.com/aidless/lifeplanner">查看源码</a>
+      </div>
+      <p class="fineprint">不想装 Python？先打开上面的示例看板；它就是 <code>make demo</code> 生成的虚构画像。</p>
+    </section>
+
+    <section class="band" id="privacy">
+      <div class="section-head section-head--stack">
+        <h2>你的记录，不需要经过任何服务器。</h2>
+        <p>没有账号系统，没有云端同步，也没有「为了改进产品」的默认上传。</p>
+      </div>
+      <table class="ledger">
+        <tbody>
+          <tr><th scope="row">默认存放</th><td>本机 SQLite 单文件</td></tr>
+          <tr><th scope="row">是否上传</th><td>不上传；没有账号体系</td></tr>
+          <tr><th scope="row">看板</th><td>单文件 HTML，离线双击可开</td></tr>
+          <tr><th scope="row">删除</th><td>删除数据库文件即可；<code>lifeplan backup</code> 可先备份</td></tr>
+        </tbody>
+      </table>
+      <p class="boundary"><strong>边界：</strong>它不是心理治疗、医疗或财务建议。价值分只可纵向自比，不能当作「过得好不好」的结论。</p>
+    </section>
+
+    <section class="band faq" id="faq">
+      <h2>常见问题</h2>
+      <details>
+        <summary>需要 AI 或 API Key 吗？</summary>
+        <p>不需要。核心功能是纯 Python 标准库；没有模型也能初始化、记录、结算和生成看板。</p>
+      </details>
+      <details>
+        <summary>手机上能录入吗？</summary>
+        <p>目前录入是命令行；看板在手机浏览器里可读。图形化录入还没做，不假装有。</p>
+      </details>
+      <details>
+        <summary>数据会丢吗？</summary>
+        <p>数据只在本机文件里。换机器或重装前用 <code>lifeplan backup</code> 备份；没有云端副本。</p>
+      </details>
+      <details>
+        <summary>可以商用或二次开发吗？</summary>
+        <p>MIT 许可，可以。具体约束见仓库里的 LICENSE。</p>
+      </details>
+    </section>
+    <section class="band final-cta" id="try">
+      <h2>先看一张结算单，再决定要不要开始。</h2>
+      <p>不注册、不填数据；示例看板是 <code>make demo</code> 生成的虚构画像。</p>
+      <div class="actions">
+        <a class="btn" href="demo/dashboard.html" target="_blank" rel="noopener">看示例看板（虚构数据）</a>
+        <a class="btn btn-ghost" href="#start">3 分钟本地跑起来</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><strong>lifeplan</strong> · 本地优先的个人校准工具</div>
+    <nav aria-label="页脚链接">
+      <a href="https://github.com/aidless/lifeplanner">GitHub</a>
+      <a href="https://github.com/aidless/lifeplanner/issues">反馈</a>
+      <a href="https://github.com/aidless/lifeplanner/blob/main/LICENSE">MIT</a>
+    </nav>
+    <p>示例数据为虚构画像；页面不收集访问数据。</p>
+  </footer>
+</body>
+</html>

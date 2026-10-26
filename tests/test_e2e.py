@@ -61,11 +61,26 @@ class TestEndToEnd(unittest.TestCase):
         conn = connect(self.path)
         html = render_dashboard(conn)
         self.assertIn("<svg", html)
+        self.assertIn("示例数据 · 虚构画像 · 只读", html)
         self.assertFalse(
             re.search(r'(src|href)="https?://', html),
             "看板不得引用任何外部资源",
         )
         conn.close()
+
+    def test_dashboard_svgs_shrink_on_mobile(self):
+        conn = connect(self.path)
+        html = render_dashboard(conn)
+        self.assertIn("svg { max-width:100%; height:auto; }", html)
+        self.assertIn("@media (max-width:720px)", html)
+        conn.close()
+
+    def test_landing_demo_snapshot_is_present(self):
+        from pathlib import Path
+
+        demo = Path(__file__).resolve().parents[1] / "landing" / "demo" / "dashboard.html"
+        self.assertTrue(demo.exists(), "landing 的示例看板快照缺失")
+        self.assertIn("示例数据", demo.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

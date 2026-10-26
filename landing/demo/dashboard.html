@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人生规划系统 · 2026-10-25</title>
+<style>
+  :root {
+    --bg:#f8f9fb; --card:#ffffff; --border:#e4e7ec;
+    --text:#1a1d23; --muted:#6b7280; --accent:#4c6ef5;
+    --good:#12b886; --warn:#f59f00; --bad:#e03131;
+    --proxy:#f76707;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#15171c; --card:#1e2128; --border:#2c313a; --text:#e8eaed; --muted:#9aa2ae;
+    }
+  }
+  * { box-sizing:border-box; }
+  svg { max-width:100%; height:auto; }
+  body { margin:0; padding:32px 20px 60px; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.55; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  header { display:flex; flex-wrap:wrap; gap:20px 24px; align-items:flex-end;
+    justify-content:space-between; margin-bottom:24px; }
+  .brand { flex:1 1 320px; min-width:260px; }
+  h1 { font-size:22px; margin:0 0 4px; letter-spacing:-.2px; }
+  h2 { font-size:15px; margin:0 0 14px; text-transform:none; color:var(--muted); font-weight:600; }
+  h3 { font-size:15px; margin:0 0 6px; }
+  .muted { color:var(--muted); }
+  .small { font-size:12px; }
+  .num { font-variant-numeric:tabular-nums; text-align:right; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:18px 20px; margin-bottom:16px; }
+  .demo-banner { margin-bottom:16px; padding:10px 14px; border-radius:8px;
+    background:rgba(245,159,0,.12); border:1px solid rgba(245,159,0,.38);
+    color:#8a5a00; font-size:13px; line-height:1.5; }
+  .demo-banner strong { letter-spacing:.02em; }
+  .top { display:grid; grid-template-columns:auto 1fr; gap:28px; align-items:center; }
+  .kpis { flex:2 1 560px; display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
+    gap:10px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .kpi .v { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.25; }
+  .kpi .l { font-size:11px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; font-weight:600; color:var(--muted); font-size:11px;
+    padding:6px 8px; border-bottom:1px solid var(--border); }
+  td { padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tbody tr:last-child td { border-bottom:none; }
+  .mini td,.mini th { padding:5px 7px; font-size:12px; }
+  .bar { display:inline-block; width:110px; height:7px; background:var(--border);
+    border-radius:4px; overflow:hidden; vertical-align:middle; }
+  .bar span { display:block; height:100%; border-radius:4px; }
+  .tag { display:inline-block; padding:1px 7px; border-radius:20px; font-size:11px;
+    background:var(--border); color:var(--muted); }
+  .tag.proxy { background:rgba(247,103,7,.14); color:var(--proxy); }
+  .goal-head { display:flex; justify-content:space-between; align-items:flex-start;
+    gap:16px; margin-bottom:12px; }
+  .goal-stats { display:flex; gap:18px; text-align:right; }
+  .goal-stats .big { display:block; font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .cal-grid { display:grid; grid-template-columns:auto 1fr; gap:24px; align-items:start; }
+  .verdict { padding:10px 14px; border-radius:8px; background:rgba(76,110,245,.09);
+    color:var(--accent); font-size:13px; font-weight:600; margin-bottom:12px; }
+  .uq-list { list-style:none; padding:0; margin:0; }
+  .uq-list li { padding:8px 0; border-bottom:1px solid var(--border); }
+  .uq-list li:last-child { border-bottom:none; }
+  .uq-list span { display:block; font-size:12px; margin-top:2px; }
+  .foot { text-align:center; color:var(--muted); font-size:11px; margin-top:28px; }
+  @media (max-width:720px) {
+    body { padding:20px 12px 40px; }
+    .card { padding:14px; }
+    .top,.cal-grid { grid-template-columns:1fr; }
+    .goal-stats { text-align:left; gap:12px; }
+    .bar { width:72px; }
+    table { font-size:12px; }
+    th, td { padding:6px 5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-banner" role="status"><strong>示例数据 · 虚构画像 · 只读</strong>　本库带种子标记（2026-10-26 03:40 UTC），不是真实用户记录。</div>
+  <header>
+    <div class="brand">
+      <h1>人生规划系统</h1>
+      <div class="muted small">万事万物皆可量化 —— 但不可核验的量化，只值一半分。　统计截止 2026-10-25</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">0.2347</div><div class="l">Brier 分数</div></div>
+      <div class="kpi"><div class="v">0.4438</div><div class="l">ECE 校准误差</div></div>
+      <div class="kpi"><div class="v">+0.169</div><div class="l">过度自信度</div></div>
+      <div class="kpi"><div class="v">8</div><div class="l">已结算预测</div></div>
+      <div class="kpi"><div class="v">56%</div><div class="l">数据覆盖率</div></div>
+      <div class="kpi"><div class="v">0.319</div><div class="l">价值分（参考）</div></div>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="top">
+      <div>
+    <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label="价值分与置信度">
+      <circle cx="66.0" cy="66.0" r="56.0" fill="none" stroke="#e4e7ec" stroke-width="12"/>
+      <circle cx="66.0" cy="66.0" r="56.0" fill="none" stroke="#4c6ef5" stroke-width="12"
+              stroke-dasharray="112.28 351.86" stroke-linecap="round"
+              transform="rotate(-90 66.0 66.0)"/>
+      <circle cx="66.0" cy="66.0" r="42.0" fill="none" stroke="#e4e7ec" stroke-width="9"/>
+      <circle cx="66.0" cy="66.0" r="42.0" fill="none" stroke="#12b886" stroke-width="9"
+              stroke-dasharray="114.69 263.89" stroke-linecap="round"
+              transform="rotate(-90 66.0 66.0)"/>
+      <text x="66.0" y="62.0" text-anchor="middle" font-size="24" font-weight="700"
+            fill="#1a1d23">0.32</text>
+      <text x="66.0" y="82.0" text-anchor="middle" font-size="11" fill="#6b7280">价值分</text>
+      <text x="66.0" y="98.0" text-anchor="middle" font-size="11" fill="#12b886">置信 0.43</text>
+    </svg></div>
+      <div>
+        <h2>为什么校准在前、价值分在后</h2>
+        <p class="muted small" style="max-width:56ch">
+          价值分的 baseline / target 由人填写，因此<strong>同一周同样的生活，
+          改一下 target 就能让分数从 0.3 跳到 0.7</strong>（实测发生过：超额提交打满了
+          target=12 的指标）。它只能自比，不能当"过得好不好"的读数。
+          而校准的判据在系统外部 —— p=0.7 是否真的 70% 兑现，改不了。
+          所以校准是主指标，价值分降为参考。左图外环为价值分、内环为证据置信度。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>校准：本系统唯一外部可检验的指标</h2>
+    <p class="muted small">
+      把「我能不能做到」当作二分类预测任务事前登记、到期结算，用 Brier 与 ECE 校准自己。
+      这套方法来自评测方法论：<strong>裁判的可信度不来自权威，而来自其判断与实际结果的一致性</strong>。
+    </p>
+    
+      <div class="cal-grid">
+        <div><svg width="320" height="240" viewBox="0 0 320 240" role="img" aria-label="可靠性曲线"><line x1="34.0" y1="12" x2="34.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="206.0" x2="308" y2="206.0" stroke="#e4e7ec" stroke-width="1"/><text x="34.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.00</text><text x="28" y="210.0" font-size="10" text-anchor="end" fill="#6b7280">0.00</text><line x1="102.5" y1="12" x2="102.5" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="157.5" x2="308" y2="157.5" stroke="#e4e7ec" stroke-width="1"/><text x="102.5" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.25</text><text x="28" y="161.5" font-size="10" text-anchor="end" fill="#6b7280">0.25</text><line x1="171.0" y1="12" x2="171.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="109.0" x2="308" y2="109.0" stroke="#e4e7ec" stroke-width="1"/><text x="171.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.50</text><text x="28" y="113.0" font-size="10" text-anchor="end" fill="#6b7280">0.50</text><line x1="239.5" y1="12" x2="239.5" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="60.5" x2="308" y2="60.5" stroke="#e4e7ec" stroke-width="1"/><text x="239.5" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.75</text><text x="28" y="64.5" font-size="10" text-anchor="end" fill="#6b7280">0.75</text><line x1="308.0" y1="12" x2="308.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="12.0" x2="308" y2="12.0" stroke="#e4e7ec" stroke-width="1"/><text x="308.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">1.00</text><text x="28" y="16.0" font-size="10" text-anchor="end" fill="#6b7280">1.00</text><line x1="34.0" y1="206.0" x2="308.0" y2="12.0" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="177.8" cy="206.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.53 → 实际 0.00（n=2）</title></circle><circle cx="205.2" cy="12.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.62 → 实际 1.00（n=2）</title></circle><circle cx="225.8" cy="206.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.70 → 实际 0.00（n=2）</title></circle><circle cx="260.0" cy="12.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.82 → 实际 1.00（n=2）</title></circle><text x="171.0" y="236" font-size="10" text-anchor="middle" fill="#6b7280">事前预测概率</text><text x="10" y="109.0" font-size="10" text-anchor="middle" fill="#6b7280" transform="rotate(-90 10 109.0)">实际命中率</text></svg></div>
+        <div>
+          <div class="verdict">系统性过度自信：说&#x27;能做到&#x27;时更容易做不到</div>
+          <table class="mini">
+            <thead><tr><th>预测</th><th>实际</th><th>偏差</th><th>n</th></tr></thead>
+            <tbody><tr><td class="num">0.53</td><td class="num">0.00</td><td class="num" style="color:#e03131">-0.53</td><td class="num">2</td></tr><tr><td class="num">0.62</td><td class="num">1.00</td><td class="num" style="color:#e03131">+0.38</td><td class="num">2</td></tr><tr><td class="num">0.70</td><td class="num">0.00</td><td class="num" style="color:#e03131">-0.70</td><td class="num">2</td></tr><tr><td class="num">0.82</td><td class="num">1.00</td><td class="num" style="color:#f59f00">+0.18</td><td class="num">2</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+  </section>
+
+  <div class="card">
+    <h2>分领域：价值分（上）/ 证据置信度（下）<span class="muted small">　—— 参考指标</span></h2>
+    <p class="muted small" style="margin-top:-6px">
+      只做纵向自比，不做横向比较；分值水平取决于当初怎么写目标。
+    </p>
+    <svg width="560" height="176" viewBox="0 0 560 176" role="img" aria-label="领域对比"><text x="84" y="21" font-size="12" text-anchor="end" fill="#1a1d23">事业深耕</text><rect x="92" y="10" width="416.0" height="10" rx="5" fill="#e4e7ec"/><rect x="92" y="10" width="76.5" height="10" rx="5" fill="#4c6ef5"/><rect x="92" y="24" width="416.0" height="6" rx="3" fill="#e4e7ec"/><rect x="92" y="24" width="208.4" height="6" rx="3" fill="#12b886"/><text x="516" y="19" font-size="11" fill="#6b7280">0.18</text><text x="84" y="61" font-size="12" text-anchor="end" fill="#1a1d23">长期资产</text><rect x="92" y="50" width="416.0" height="10" rx="5" fill="#e4e7ec"/><rect x="92" y="50" width="0.0" height="10" rx="5" fill="#4c6ef5"/><rect x="92" y="64" width="416.0" height="6" rx="3" fill="#e4e7ec"/><rect x="92" y="64" width="0.0" height="6" rx="3" fill="#12b886"/><text x="516" y="59" font-size="11" fill="#6b7280">0.00</text><text x="84" y="101" font-size="12" text-anchor="end" fill="#1a1d23">健康底盘</text><rect x="92" y="90" width="416.0" height="10" rx="5" fill="#e4e7ec"/><rect x="92" y="90" width="208.0" height="10" rx="5" fill="#4c6ef5"/><rect x="92" y="104" width="416.0" height="6" rx="3" fill="#e4e7ec"/><rect x="92" y="104" width="317.9" height="6" rx="3" fill="#12b886"/><text x="516" y="99" font-size="11" fill="#6b7280">0.50</text><text x="84" y="141" font-size="12" text-anchor="end" fill="#1a1d23">关系与意义</text><rect x="92" y="130" width="416.0" height="10" rx="5" fill="#e4e7ec"/><rect x="92" y="130" width="343.2" height="10" rx="5" fill="#4c6ef5"/><rect x="92" y="144" width="416.0" height="6" rx="3" fill="#e4e7ec"/><rect x="92" y="144" width="228.8" height="6" rx="3" fill="#12b886"/><text x="516" y="139" font-size="11" fill="#6b7280">0.82</text></svg>
+  </div>
+
+  
+    <section class="card goal" data-domain="事业深耕">
+      <div class="goal-head">
+        <div>
+          <h3>完成一次职业方向转换</h3>
+          <p class="muted small">从投递到拿到 offer；优先目标城市，远程可谈。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.33</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.90</span><span class="muted small">置信</span></div>
+          <div><span class="big">100%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>有效投递数 </td>
+        <td class="num">19份</td>
+        <td class="num muted">0 → 40</td>
+        <td>
+          <div class="bar"><span style="width:47.5%;background:#4c6ef5"></span></div>
+          <span class="muted small">48%</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr>
+      <tr>
+        <td>面试转化率 </td>
+        <td class="num">9%</td>
+        <td class="num muted">0 → 15</td>
+        <td>
+          <div class="bar"><span style="width:60.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">60%</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr>
+      <tr>
+        <td>公开竞赛最佳分 </td>
+        <td class="num">0.51分</td>
+        <td class="num muted">0.5 → 0.4</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">0%</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr>
+      <tr>
+        <td>面试复盘完成率 <span class="tag proxy">代理</span></td>
+        <td class="num">40%</td>
+        <td class="num muted">0 → 100</td>
+        <td>
+          <div class="bar"><span style="width:40.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">40%</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="事业深耕">
+      <div class="goal-head">
+        <div>
+          <h3>技术写作稳定产出</h3>
+          <p class="muted small">每月一篇长文；限额每月 2 篇新稿。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.00</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.00</span><span class="muted small">置信</span></div>
+          <div><span class="big">0%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>新稿发布数 </td>
+        <td class="num">—</td>
+        <td class="num muted">0 → 2</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr>
+      <tr>
+        <td>外部审稿轮次 </td>
+        <td class="num">—</td>
+        <td class="num muted">0 → 26</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="事业深耕">
+      <div class="goal-head">
+        <div>
+          <h3>开源项目活跃度维持</h3>
+          <p class="muted small">保持有意义的更新，而非空转提交。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.00</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.00</span><span class="muted small">置信</span></div>
+          <div><span class="big">0%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>月度有效提交数 </td>
+        <td class="num">—</td>
+        <td class="num muted">0 → 12</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr>
+      <tr>
+        <td>新增外部用户/Star </td>
+        <td class="num">—</td>
+        <td class="num muted">0 → 30</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="长期资产">
+      <div class="goal-head">
+        <div>
+          <h3>知识资产沉淀</h3>
+          <p class="muted small">公开文章与工具文档的存量积累；全部如实标注状态，不虚报。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.00</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.00</span><span class="muted small">置信</span></div>
+          <div><span class="big">0%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>公开文章数 </td>
+        <td class="num">—</td>
+        <td class="num muted">10 → 16</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr>
+      <tr>
+        <td>成稿储备 </td>
+        <td class="num">—</td>
+        <td class="num muted">10 → 20</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="长期资产">
+      <div class="goal-head">
+        <div>
+          <h3>资金缓冲垫</h3>
+          <p class="muted small">职业过渡期的现金流安全垫，避免被迫接受不合适岗位。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.00</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.00</span><span class="muted small">置信</span></div>
+          <div><span class="big">0%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>储蓄月数覆盖 </td>
+        <td class="num">—</td>
+        <td class="num muted">0 → 6</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#6b7280"></span></div>
+          <span class="muted small">—</span>
+        </td>
+        <td><span class="tag">可核验</span></td>
+        <td><span style="color:#6b7280">无观测</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="健康底盘">
+      <div class="goal-head">
+        <div>
+          <h3>睡眠与体力不塌方</h3>
+          <p class="muted small">高强度并行期最容易被牺牲的部分，但它是其余一切的前置条件。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.50</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.76</span><span class="muted small">置信</span></div>
+          <div><span class="big">100%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>日均睡眠 </td>
+        <td class="num">6.4小时</td>
+        <td class="num muted">7 → 7</td>
+        <td>
+          <div class="bar"><span style="width:100.0%;background:#12b886"></span></div>
+          <span class="muted small">100%</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#12b886">已达成</span></td>
+      </tr>
+      <tr>
+        <td>每周运动次数 </td>
+        <td class="num">2次</td>
+        <td class="num muted">2 → 4</td>
+        <td>
+          <div class="bar"><span style="width:0.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">0%</span>
+        </td>
+        <td><span class="tag">有记录</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr>
+      <tr>
+        <td>连续熬夜天数 </td>
+        <td class="num">1天</td>
+        <td class="num muted">2 → 0</td>
+        <td>
+          <div class="bar"><span style="width:50.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">50%</span>
+        </td>
+        <td><span class="tag">自述</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+    <section class="card goal" data-domain="关系与意义">
+      <div class="goal-head">
+        <div>
+          <h3>维持重要关系与心流体验</h3>
+          <p class="muted small">这一维度的量化最容易失真，故以过程频次作代理，并承认其局限。</p>
+        </div>
+        <div class="goal-stats">
+          <div><span class="big">0.82</span><span class="muted small">价值</span></div>
+          <div><span class="big">0.55</span><span class="muted small">置信</span></div>
+          <div><span class="big">100%</span><span class="muted small">覆盖</span></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>指标</th><th>当前</th><th>基线→目标</th><th>进展</th><th>证据</th><th>状态</th></tr></thead>
+        <tbody>
+      <tr>
+        <td>深度对话次数 <span class="tag proxy">代理</span></td>
+        <td class="num">3次</td>
+        <td class="num muted">0 → 4</td>
+        <td>
+          <div class="bar"><span style="width:75.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">75%</span>
+        </td>
+        <td><span class="tag">自述</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr>
+      <tr>
+        <td>心流状态小时 <span class="tag proxy">代理</span></td>
+        <td class="num">9小时</td>
+        <td class="num muted">0 → 10</td>
+        <td>
+          <div class="bar"><span style="width:90.0%;background:#4c6ef5"></span></div>
+          <span class="muted small">90%</span>
+        </td>
+        <td><span class="tag">自述</span></td>
+        <td><span style="color:#4c6ef5">推进中</span></td>
+      </tr></tbody>
+      </table>
+    </section>
+
+  
+    <section class="card">
+      <h3>待结算预测（2）</h3>
+      <table class="mini"><thead><tr><th>ID</th><th>陈述</th><th>p</th><th>到期</th></tr></thead>
+      <tbody><tr><td class="num">#9</td><td>20 天内发布 2 篇新稿</td><td class="num">0.75</td><td class="muted">2026-11-14</td></tr><tr><td class="num">#10</td><td>45 天内拿到 offer</td><td class="num">0.45</td><td class="muted">2026-12-09</td></tr></tbody></table>
+    </section>
+  
+    <section class="card">
+      <h3>承诺与产能</h3>
+      <p class="muted small">量化系统最常见的失败模式不是指标没达成，而是同时承诺太多、每项都推进不足。</p>
+      <table class="mini"><thead><tr><th>领域</th><th>计划</th><th>实际</th><th>差额</th></tr></thead>
+      <tbody><tr><td>事业深耕</td><td class="num">30h</td><td class="num">26h</td><td class="num" style="color:#12b886">-4h · 正常</td></tr><tr><td>长期资产</td><td class="num">12h</td><td class="num">14h</td><td class="num" style="color:#e03131">+2h · 超载</td></tr><tr><td>健康底盘</td><td class="num">8h</td><td class="num">5h</td><td class="num" style="color:#f59f00">-3h · 投入不足</td></tr><tr><td>关系与意义</td><td class="num">6h</td><td class="num">3h</td><td class="num" style="color:#f59f00">-3h · 投入不足</td></tr></tbody></table>
+    </section>
+  
+    <section class="card uq">
+      <h3>不可量化登记</h3>
+      <p class="muted small">列出这些不是缺陷，而是系统的诚实边界——假装能测，反而会让系统给出错误的优化方向。</p>
+      <ul class="uq-list"><li><strong>职业长期意义感</strong><span class="muted">意义感高度依赖未来的自我叙事与外部反馈，无法用当前频次/时长类指标可靠代表；用&#x27;心流小时&#x27;代理会系统性高估可量化工作、忽视维护性工作。</span></li><li><strong>亲密关系的质量</strong><span class="muted">互动次数与关系质量之间不存在稳定单调关系，高频低质互动反而可能造成负向代理偏差。</span></li><li><strong>认知能力的真实增长</strong><span class="muted">评测分数、产出数等活动量指标无法直接代表能力存量是否真正提升。</span></li></ul>
+    </section>
+
+  <div class="foot">
+    lifeplan · 单文件离线看板 · 所有数据来自本地 SQLite，无外部上传
+  </div>
+</div>
+</body>
+</html>
