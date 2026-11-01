@@ -81,7 +81,7 @@ Review ── 修正 Goal/Metric/权重
 
 实现：SQLite 11 表 + `decisions` 台账（`ledger.py`）。
 
-## 5. 模型路由（详见 MODEL_ROUTING_GUIDE.md）
+## 5. 模型路由（详见 model_router.md）
 
 | 任务 | 首选 | 降级 |
 |---|---|---|

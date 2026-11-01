@@ -654,7 +654,7 @@ v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并�
 | `ontology/metric_dictionary.md` | 指标词典与设计说明（如「学习质量」五维分解） | 四 🔄 |
 | `charter/NON_GOALS.md` · `charter/privacy_policy.md` | 非目标清单 · 隐私政策 | 一 ✅ |
 | `literature/literature_review.md` · `literature/references.bib` | 综述（40 篇）+ BibTeX | 二 🔄 |
-| `agent/ARCHITECTURE.md` · `agent/AGENT_PROTOCOL.md` · `agent/MODEL_ROUTING_GUIDE.md` | 架构/协议/路由 | 四 ✅ |
+| `agent/ARCHITECTURE.md` · `agent/AGENT_PROTOCOL.md` · `agent/model_router.md` | 架构/协议/路由 | 四 ✅ |
 | `agent/*.schema.json`（3 份） | 测量/证据/决策协议 Schema（有测试校验） | 四 ✅ |
 | `benchmarks/benchmark_spec.md` | 七级基线 + 消融 + 指标 | 七 ⬜ |
 | `life-system/FAILURE_LOG.md` · `life-system/PILOT_CASES.md` | 10 次失败记录 · 试点案例 | 五 🔄 |
