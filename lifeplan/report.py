@@ -27,13 +27,13 @@ from __future__ import annotations
 from datetime import date
 
 from .audit import run_audit
-from .calibration import compute_calibration, load_predictions
+from .calibration import MIN_N_FOR_CLAIM, compute_calibration, load_predictions
 from .db import rows
 from .evidence import tier_label
 from .metrics import Snapshot, build_snapshot
 
-#: 校准结论有统计意义所需的最低已结算样本量
-MIN_SAMPLES_FOR_SIGNAL = 20
+#: 与 calibration.MIN_N_FOR_CLAIM 同一门槛，避免周报和结论文案各写一个数。
+MIN_SAMPLES_FOR_SIGNAL = MIN_N_FOR_CLAIM
 
 
 def _pct(x: float) -> str:
@@ -58,8 +58,8 @@ def _status_label(status: str) -> str:
 def _calibration_section(add, cal) -> None:
     add("## 一、校准摘要（主指标）")
     add("")
-    add("这个系统里唯一**外部可检验**的量：你说「能做到」时的把握，和实际做到的频率是否一致。")
-    add("它不依赖任何自我评价，也不受目标值怎么设的影响——所以它是主指标。")
+    add("校准比较的是事前写下的概率，和结算时填写的 0/1。")
+    add("它不随 target 改写。0/1 仍是人提交的，程序不核对外部世界，所以 Brier/ECE 只描述这本账，不是生活结果。")
     add("")
 
     if cal.n_resolved == 0:

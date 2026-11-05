@@ -35,7 +35,7 @@ web
 已确认：
 
 - `lifeplan init --seed` 初始化并写入演示数据；`score`、`calibrate`、`audit`、`observe`、`predict`、`resolve`、`report`、`dashboard`、`export` 可用。
-- 188 个测试通过（2026-10-25，本机 `make test`，2 skipped）。
+- 测试条数不在此手写。`tests/test_honesty.py` 核对 README 的 `honesty:test-count` 与 `unittest` 发现的条数。
 - `make demo` 约 3 秒产出 `dashboard.html`、`report.md`、`data.json`、`lifeplan.db`。
 - 移动端已修复横向溢出（390px 视口下 scrollWidth = clientWidth = 390）。
 
@@ -56,7 +56,7 @@ web
 
 - `examples/dashboard.html` 与 `examples/report.md`：真实生成的演示产物。
 - `lifeplan/seed.py`：虚构演示数据，文件内已声明不是真实人物记录。
-- `tests/`：188 个测试；`make demo` 可复跑。
+- `tests/` 由 CI 运行；`make demo` 可复跑。条数见 README 标记，不在这里再写一遍。
 - 无真实用户、无推荐语、无媒体报道、无 GitHub star 可引用。
 
 ## Product Principles

@@ -114,6 +114,50 @@ class TestClassify(ControlTestCase):
         self.assertNotEqual(v.tier, 1)
         self.assertTrue(v.requires_confirm)
 
+    def test_cp_outside_jail_is_not_auto(self):
+        v = classify(["cp", "notes.txt", "/tmp/outside.txt"], self.home)
+        self.assertTrue(v.requires_confirm)
+        self.assertNotEqual(v.tier, 1)
+        relative = classify(["cp", "notes.txt", "copy.txt"], self.home)
+        self.assertEqual(relative.tier, 1)
+        self.assertFalse(relative.requires_confirm)
+
+    def test_escape_still_confirms_when_execute_is_open(self):
+        pol = Policy(allow_execute=True, workspace_jail=[self.home])
+        v = classify(["cp", "a.txt", "/tmp/outside.txt"], self.home, pol)
+        self.assertTrue(v.allowed)
+        self.assertTrue(v.requires_confirm, "allow_execute 不能把越界写入变成自动执行")
+
+    def test_parent_traversal_is_not_auto(self):
+        v = classify(["cp", "notes.txt", "../outside.txt"], self.home)
+        self.assertTrue(v.requires_confirm)
+        self.assertNotEqual(v.tier, 1)
+
+    def test_non_bool_policy_does_not_open_gates(self):
+        pol = Policy.from_dict({
+            "allow_destructive": "false",
+            "allow_execute": "true",
+            "allow_shell_wrapper": 1,
+            "allow_observe": "false",
+        })
+        self.assertFalse(pol.allow_destructive)
+        self.assertFalse(pol.allow_execute)
+        self.assertFalse(pol.allow_shell_wrapper)
+        self.assertFalse(pol.allow_observe)
+        v = classify(["rm", "notes.txt"], self.home, pol)
+        self.assertFalse(v.allowed)
+
+    def test_corrupt_policy_fails_closed_without_rewrite(self):
+        path = Path(self.home) / "policy.json"
+        path.write_text("{", encoding="utf-8")
+        pol = load_policy(create=True)
+        self.assertFalse(pol.allow_observe)
+        self.assertFalse(pol.allow_workspace_write)
+        self.assertFalse(pol.allow_destructive)
+        self.assertEqual(path.read_text(encoding="utf-8"), "{")
+        v = classify(["ls"], self.home, pol)
+        self.assertFalse(v.allowed)
+
 
 class TestToken(ControlTestCase):
     def test_token_deterministic_and_bound(self):
@@ -199,8 +243,8 @@ class TestRun(ControlTestCase):
 class TestPresence(ControlTestCase):
     def _signals(self):
         return [
-            Signal("project", "casmi26", "Python", "/home/u/casmi26", 2.0),
-            Signal("project", "arxiv-publication", "LaTeX", "/home/u/arxiv-publication", 2.0),
+            Signal("project", "proj-alpha", "Python", "fixture/proj-alpha", 2.0),
+            Signal("project", "arxiv-notes", "LaTeX", "fixture/arxiv-notes", 2.0),
             Signal("tool", "机器学习", "nvidia-smi", "which nvidia-smi", 1.0),
         ]
 

@@ -21,6 +21,9 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 
 N_BINS = 10
+# 少于这个已结算条数时，禁止输出「校准良好 / 系统性过度…」这类结论。
+# 与周报里的统计意义门槛相同，避免两处各写一个数。
+MIN_N_FOR_CLAIM = 20
 
 
 @dataclass
@@ -73,17 +76,33 @@ class CalibrationReport:
     by_domain: dict[str, dict] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
+    def _direction(self) -> str:
+        """方向描述。样本不够时只能当附注，不能升级成结论。"""
+        oc = self.overconfidence or 0.0
+        if self.ece is not None and self.ece <= 0.08 and abs(oc) <= 0.10:
+            return "方向上概率与实际接近"
+        if oc > 0.15:
+            return "方向偏过度自信"
+        if oc < -0.15:
+            return "方向偏过度保守"
+        return "方向上有偏差但幅度有限"
+
     @property
     def verdict(self) -> str:
         if self.brier is None:
             return "无已结算预测，无法校准"
+        if self.n_resolved < MIN_N_FOR_CLAIM:
+            return (
+                f"样本不足（n={self.n_resolved}，至少 {MIN_N_FOR_CLAIM} 条才允许下校准结论）："
+                f"{self._direction()}。这不是生活结果。"
+            )
         if self.ece is not None and self.ece <= 0.08 and abs(self.overconfidence or 0) <= 0.10:
-            return "校准良好：概率与实际基本对齐"
+            return "校准良好：概率与实际基本对齐（仍只描述这本账，不是生活结果）"
         if (self.overconfidence or 0) > 0.15:
-            return "系统性过度自信：说'能做到'时更容易做不到"
+            return "系统性过度自信：说'能做到'时更容易做不到（仍只描述这本账，不是生活结果）"
         if (self.overconfidence or 0) < -0.15:
-            return "系统性过度保守：低估了自己的兑现能力"
-        return "校准一般：存在方向性偏差但幅度有限"
+            return "系统性过度保守：低估了自己的兑现能力（仍只描述这本账，不是生活结果）"
+        return "校准一般：存在方向性偏差但幅度有限（仍只描述这本账，不是生活结果）"
 
 
 def load_predictions(conn, include_open: bool = True) -> list[Prediction]:
@@ -176,7 +195,14 @@ def compute_calibration(predictions: list[Prediction]) -> CalibrationReport:
         )
     report.bins = bins
     report.ece = ece
-    report.notes.append(f"最大分箱偏差 (MCE) = {mce:.3f}")
+    report.notes.append(
+        f"最大分箱偏差 (MCE) = {mce:.3f}。小数位是计算格式，不是测量精度。"
+    )
+    occupied = [b for b in bins if b.count]
+    if occupied and min(b.count for b in occupied) < 5:
+        report.notes.append(
+            "有分箱的 n<5。ECE 会被少数样本拉动，不能当成稳定的校准误差。"
+        )
 
     # 分领域校准：找出我尤其不擅长的领域
     dom_groups: dict[str, list[Prediction]] = {}
@@ -194,9 +220,10 @@ def compute_calibration(predictions: list[Prediction]) -> CalibrationReport:
             "overconfidence": mp - ac,
         }
 
-    if len(resolved) < 10:
+    if len(resolved) < MIN_N_FOR_CLAIM:
         report.notes.append(
-            f"样本量偏小 (n={len(resolved)})，校准结论只能作为初步信号，不足以支撑强判断。"
+            f"样本量不足 (n={len(resolved)}，声称校准至少 {MIN_N_FOR_CLAIM} 条)。"
+            "在此之前不要把 Brier/ECE 读成结论。"
         )
     return report
 

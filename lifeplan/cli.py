@@ -255,6 +255,7 @@ def cmd_score(args) -> None:
         return
 
     print(f"\n生命状态　截止 {snap.as_of}")
+    print("  价值分只描述账本里的指标，不是生活结果。")
     print("=" * 56)
     print(f"  价值分 value          {snap.value:.3f}")
     print(f"  证据置信度 confidence {snap.confidence:.3f}")
@@ -290,6 +291,16 @@ def cmd_calibrate(args) -> None:
         }, ensure_ascii=False, indent=2))
         return
     print(f"\n{cal.verdict}\n")
+    print("  Brier / ECE / 过度自信度只描述这本账，不是生活结果。")
+    seeded = ""
+    try:
+        from .db import get_meta
+
+        seeded = get_meta(conn, "seeded_at", "")
+    except Exception:
+        seeded = ""
+    if seeded:
+        print(f"  ⚠ 本库含种子数据（{seeded} 导入），分数描述虚构画像。")
     print(f"  已结算 {cal.n_resolved} 条　待结算 {cal.n_open} 条")
     if cal.brier is not None:
         print(f"  Brier           {cal.brier:.4f}")
@@ -1089,7 +1100,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
 
     sp = sub.add_parser("init", help="初始化数据库")
-    sp.add_argument("--seed", action="store_true", help="写入贴近真实的种子数据")
+    sp.add_argument("--seed", action="store_true", help="写入虚构演示画像（不是真实记录）")
     sp.set_defaults(func=cmd_init)
 
     sp = sub.add_parser("goal", help="目标管理")
