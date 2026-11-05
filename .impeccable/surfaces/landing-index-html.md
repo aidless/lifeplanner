@@ -19,7 +19,7 @@ OWN-WORLD: The existing dashboard's audit language, raised into a ledger: cool p
 
 STORY: The visitor sees that completion is not the same as calibration, learns the three-step loop, inspects a real dashboard, and can run the demo in three minutes or open the sample dashboard immediately.
 
-FIRST VIEWPORT: Left, a two-line serif verdict “计划会骗你。结算不会。” with one paragraph, two actions, and a local-first line. Right, a bordered settlement sheet with a prediction row, a reliability chart, a red “系统性高估” stamp, and an 事前/结算后 toggle. The sheet is the hero; no metric cards.
+FIRST VIEWPORT: Left, a two-line serif line “计划会骗你。账本记得住。” with one paragraph, two actions, and a local-first line. Right, a bordered settlement sheet with a prediction row, a reliability chart, a stamp that says the sample is too small, and an 事前/结算后 toggle. The sheet is the hero; no metric cards. Scores on the sheet are the synthetic ledger, not a life outcome.
 
 FORM: Ledger statement. Existing world extended; no new identity roll. Signature interaction: the settlement toggle flips the sheet between the prediction and its outcome.
 

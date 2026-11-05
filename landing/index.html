@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>lifeplan · 计划会骗你，结算不会</title>
-  <meta name="description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.11+ 零依赖，单文件看板。" />
+  <title>lifeplan · 计划会骗你，账本记得住</title>
+  <meta name="description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.10+ 核心零依赖，单文件看板。分数不是生活结果。" />
   <meta name="theme-color" content="#eef0ea" />
-  <meta property="og:title" content="lifeplan · 计划会骗你，结算不会" />
-  <meta property="og:description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.11+ 零依赖。" />
+  <meta property="og:title" content="lifeplan · 计划会骗你，账本记得住" />
+  <meta property="og:description" content="把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。本地优先，Python 3.10+ 核心零依赖。分数不是生活结果。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://aidless.github.io/lifeplanner/" />
   <meta property="og:image" content="https://aidless.github.io/lifeplanner/assets/og.png" />
@@ -42,14 +42,14 @@
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-copy">
-        <h1>计划会骗你。<br><span class="mark">结算不会。</span></h1>
+        <h1>计划会骗你。<br><span class="mark">账本记得住。</span></h1>
         <p class="outcome-line"><span class="outcome-tag">示例</span><span class="mono">p = 0.70</span> → <strong>未兑现</strong> · 偏差 <span class="neg">+0.70</span></p>
-        <p class="lede">lifeplan 把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。它不催你打卡，只在你高估自己的时候，把账算给你看。</p>
+        <p class="lede">lifeplan 把目标变成可核验的指标，把「我能不能做到」变成事前登记、到期结算的预测。它不催你打卡。样本够了，才把概率和你填的 0/1 对上；样本不够，只写样本不足。这些分数不是生活结果。</p>
         <div class="actions">
           <a class="btn" href="demo/dashboard.html" target="_blank" rel="noopener">看示例看板（虚构数据）</a>
           <a class="btn btn-ghost" href="#start">3 分钟跑起来</a>
         </div>
-        <p class="fineprint">本地优先 · 3.11+ 零依赖 · 无账号 · 虚构示例</p>
+        <p class="fineprint">本地优先 · 3.10+ 核心零依赖 · 无账号 · 虚构示例 · 分数不是生活结果</p>
       </div>
 
       <aside class="sheet" id="settlement" data-mode="after" aria-label="示例结算单">
@@ -120,10 +120,10 @@
           <span class="before">到期后自动结算 · 历史不可改写</span>
         </div>
         <div class="stamp" aria-live="polite">
-          <span class="after">系统性高估 +0.169</span>
+          <span class="after">账本偏差 +0.169 · 样本不足</span>
           <span class="before">尚未结算</span>
         </div>
-        <p class="sheet-note">偏差按「预测 − 实际」计算；示例数据来自虚构画像，不是真实用户记录。</p>
+        <p class="sheet-note">偏差按「预测 − 实际」计算。示例数据来自虚构画像。已结算 8 条，不足 20 条；这里的 Brier / ECE 不是校准结论，也不是生活结果。</p>
       </aside>
     </section>
 
@@ -172,7 +172,7 @@
           <span class="step-char" aria-hidden="true">结</span>
           <div class="step-body">
             <h3>到期结算预测</h3>
-            <p>写下 p，到期填 1 或 0。看板会告诉你，你系统性高估还是低估。</p>
+            <p>写下 p，到期填 1 或 0。已结算满 20 条之前，看板只标样本不足，不把偏差说成你这个人的结论。</p>
             <code>lifeplan resolve 4 --hit 0</code>
           </div>
         </li>
@@ -187,7 +187,7 @@
       </div>
       <figure class="shot shot-desktop">
         <a class="shot-link" href="demo/dashboard.html" target="_blank" rel="noopener">
-          <img src="assets/dashboard-proof.png" width="2880" height="1550" alt="lifeplan 示例看板的校准区：顶部是 Brier、ECE、过度自信度，下面是可靠性曲线和分箱结算表" />
+          <img src="assets/dashboard-proof.png" width="2880" height="1800" alt="lifeplan 示例看板：虚构种子数据，校准区写明样本不足，Brier 与 ECE 不是生活结果" />
           <span class="shot-open">打开完整看板 ↗</span>
         </a>
         <figcaption>示例数据（虚构画像）· 校准区 2x 截取</figcaption>
@@ -222,7 +222,7 @@
     <section class="band start" id="start">
       <div class="section-head section-head--stack">
         <h2>从空库到第一张结算单。</h2>
-        <p>Python 3.11+，零第三方依赖（3.10 需 <code>tomli</code>）；数据写在 <code>LIFEPLAN_HOME</code> 指定的目录。演示约 3 秒。</p>
+        <p>Python 3.10+。核心命令无第三方依赖；3.10 上只有 <code>lifeplan setup</code> 需要 <code>tomli</code>。数据写在 <code>LIFEPLAN_HOME</code> 指定的目录。演示约 3 秒，不上传。</p>
       </div>
       <div class="terminal">
         <div class="terminal-head"><span>终端</span><button type="button" class="copy" data-copy="git clone https://github.com/aidless/lifeplanner.git&#10;cd lifeplanner&#10;make demo">复制命令</button></div>
@@ -252,7 +252,7 @@
           <tr><th scope="row">删除</th><td>删除数据库文件即可；<code>lifeplan backup</code> 可先备份</td></tr>
         </tbody>
       </table>
-      <p class="boundary"><strong>边界：</strong>它不是心理治疗、医疗或财务建议。价值分只可纵向自比，不能当作「过得好不好」的结论。</p>
+      <p class="boundary"><strong>边界：</strong>它不是心理治疗、医疗或财务建议。价值分只可纵向自比。Brier / ECE 也不是生活结果：结算的 0/1 由你填写，程序不核对外部世界。</p>
     </section>
 
     <section class="band faq" id="faq">

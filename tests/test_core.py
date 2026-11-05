@@ -12,7 +12,7 @@ import os
 import tempfile
 import unittest
 
-from lifeplan.calibration import Prediction, compute_calibration
+from lifeplan.calibration import MIN_N_FOR_CLAIM, Prediction, compute_calibration
 from lifeplan.evidence import apply_evidence_gap, infer_tier, tier_weight
 from lifeplan.metrics import Metric, compute_metric_state, normalize_value
 
@@ -124,10 +124,22 @@ class TestCalibration(unittest.TestCase):
         self.assertAlmostEqual(rep.overconfidence, 0.0)
 
     def test_overconfidence_detected(self):
-        preds = self._preds([(0.9, 0)] * 10)
+        preds = self._preds([(0.9, 0)] * MIN_N_FOR_CLAIM)
         rep = compute_calibration(preds)
         self.assertGreater(rep.overconfidence, 0.8)
-        self.assertIn("过度自信", rep.verdict)
+        self.assertIn("系统性过度自信", rep.verdict)
+        self.assertIn("不是生活结果", rep.verdict)
+
+    def test_small_n_is_not_a_calibration_claim(self):
+        perfect = compute_calibration(self._preds([(1.0, 1)] * 5 + [(0.0, 0)] * 5))
+        over = compute_calibration(self._preds([(0.9, 0)] * 10))
+        for rep in (perfect, over):
+            self.assertLess(rep.n_resolved, MIN_N_FOR_CLAIM)
+            self.assertIn("样本不足", rep.verdict)
+            self.assertNotIn("校准良好", rep.verdict)
+            self.assertNotIn("系统性过度自信", rep.verdict)
+            self.assertNotIn("系统性过度保守", rep.verdict)
+        self.assertIn("不是生活结果", perfect.verdict)
 
     def test_underconfidence_detected(self):
         preds = self._preds([(0.1, 1)] * 10)

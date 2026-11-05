@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>人生规划系统 · 2026-10-25</title>
+<title>人生规划系统 · 2026-11-05</title>
 <style>
   :root {
     --bg:#f8f9fb; --card:#ffffff; --border:#e4e7ec;
@@ -80,11 +80,11 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="demo-banner" role="status"><strong>示例数据 · 虚构画像 · 只读</strong>　本库带种子标记（2026-10-26 03:50 UTC），不是真实用户记录。</div>
+  <div class="demo-banner" role="status"><strong>示例数据 · 虚构画像 · 只读</strong>　本库带种子标记（2026-11-05 14:08 UTC），不是真实用户记录。</div>
   <header>
     <div class="brand">
       <h1>人生规划系统</h1>
-      <div class="muted small">万事万物皆可量化 —— 但不可核验的量化，只值一半分。　统计截止 2026-10-25</div>
+      <div class="muted small">万事万物皆可量化 —— 但不可核验的量化，只值一半分。　统计截止 2026-11-05</div>
     </div>
     <div class="kpis">
       <div class="kpi"><div class="v">0.2347</div><div class="l">Brier 分数</div></div>
@@ -116,27 +116,27 @@
       <div>
         <h2>为什么校准在前、价值分在后</h2>
         <p class="muted small" style="max-width:56ch">
-          价值分的 baseline / target 由人填写，因此<strong>同一周同样的生活，
-          改一下 target 就能让分数从 0.3 跳到 0.7</strong>（实测发生过：超额提交打满了
-          target=12 的指标）。它只能自比，不能当"过得好不好"的读数。
-          而校准的判据在系统外部 —— p=0.7 是否真的 70% 兑现，改不了。
-          所以校准是主指标，价值分降为参考。左图外环为价值分、内环为证据置信度。
+          价值分的 baseline / target 由人填写，因此<strong>同一组观测，
+          改一下 target 就能让分数从 0.3 变到 0.7</strong>。它只能和自己的过去比，
+          不能当「过得好不好」的读数。校准比较的是事前概率和结算时填写的 0/1，
+          程序并不核对外部世界。左图外环为价值分、内环为证据置信度。
         </p>
       </div>
     </div>
   </div>
 
   <section class="card">
-    <h2>校准：本系统唯一外部可检验的指标</h2>
+    <h2>校准：事前概率对上账本里的结算</h2>
     <p class="muted small">
-      把「我能不能做到」当作二分类预测任务事前登记、到期结算，用 Brier 与 ECE 校准自己。
-      这套方法来自评测方法论：<strong>裁判的可信度不来自权威，而来自其判断与实际结果的一致性</strong>。
+      Brier、ECE、过度自信度和价值分只描述这本账。结算的 0/1 由人填写，程序不抓取链接、
+      也不核对外部世界，所以这些分数不是生活结果。样本少于 20 条时，这里只写「样本不足」，
+      不把方向写成校准结论。
     </p>
     
       <div class="cal-grid">
         <div><svg width="320" height="240" viewBox="0 0 320 240" role="img" aria-label="可靠性曲线"><line x1="34.0" y1="12" x2="34.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="206.0" x2="308" y2="206.0" stroke="#e4e7ec" stroke-width="1"/><text x="34.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.00</text><text x="28" y="210.0" font-size="10" text-anchor="end" fill="#6b7280">0.00</text><line x1="102.5" y1="12" x2="102.5" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="157.5" x2="308" y2="157.5" stroke="#e4e7ec" stroke-width="1"/><text x="102.5" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.25</text><text x="28" y="161.5" font-size="10" text-anchor="end" fill="#6b7280">0.25</text><line x1="171.0" y1="12" x2="171.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="109.0" x2="308" y2="109.0" stroke="#e4e7ec" stroke-width="1"/><text x="171.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.50</text><text x="28" y="113.0" font-size="10" text-anchor="end" fill="#6b7280">0.50</text><line x1="239.5" y1="12" x2="239.5" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="60.5" x2="308" y2="60.5" stroke="#e4e7ec" stroke-width="1"/><text x="239.5" y="222" font-size="10" text-anchor="middle" fill="#6b7280">0.75</text><text x="28" y="64.5" font-size="10" text-anchor="end" fill="#6b7280">0.75</text><line x1="308.0" y1="12" x2="308.0" y2="206" stroke="#e4e7ec" stroke-width="1"/><line x1="34" y1="12.0" x2="308" y2="12.0" stroke="#e4e7ec" stroke-width="1"/><text x="308.0" y="222" font-size="10" text-anchor="middle" fill="#6b7280">1.00</text><text x="28" y="16.0" font-size="10" text-anchor="end" fill="#6b7280">1.00</text><line x1="34.0" y1="206.0" x2="308.0" y2="12.0" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="177.8" cy="206.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.53 → 实际 0.00（n=2）</title></circle><circle cx="205.2" cy="12.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.62 → 实际 1.00（n=2）</title></circle><circle cx="225.8" cy="206.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.70 → 实际 0.00（n=2）</title></circle><circle cx="260.0" cy="12.0" r="5.2" fill="#4c6ef5" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"><title>预测 0.82 → 实际 1.00（n=2）</title></circle><text x="171.0" y="236" font-size="10" text-anchor="middle" fill="#6b7280">事前预测概率</text><text x="10" y="109.0" font-size="10" text-anchor="middle" fill="#6b7280" transform="rotate(-90 10 109.0)">实际命中率</text></svg></div>
         <div>
-          <div class="verdict">系统性过度自信：说&#x27;能做到&#x27;时更容易做不到</div>
+          <div class="verdict">样本不足（n=8，至少 20 条才允许下校准结论）：方向偏过度自信。这不是生活结果。</div>
           <table class="mini">
             <thead><tr><th>预测</th><th>实际</th><th>偏差 p−实际</th><th>n</th></tr></thead>
             <tbody><tr><td class="num">0.53</td><td class="num">0.00</td><td class="num" style="color:#e03131">+0.53</td><td class="num">2</td></tr><tr><td class="num">0.62</td><td class="num">1.00</td><td class="num" style="color:#e03131">-0.38</td><td class="num">2</td></tr><tr><td class="num">0.70</td><td class="num">0.00</td><td class="num" style="color:#e03131">+0.70</td><td class="num">2</td></tr><tr><td class="num">0.82</td><td class="num">1.00</td><td class="num" style="color:#f59f00">-0.18</td><td class="num">2</td></tr></tbody>
@@ -455,7 +455,7 @@
     <section class="card">
       <h3>待结算预测（2）</h3>
       <table class="mini"><thead><tr><th>ID</th><th>陈述</th><th>p</th><th>到期</th></tr></thead>
-      <tbody><tr><td class="num">#9</td><td>20 天内发布 2 篇新稿</td><td class="num">0.75</td><td class="muted">2026-11-14</td></tr><tr><td class="num">#10</td><td>45 天内拿到 offer</td><td class="num">0.45</td><td class="muted">2026-12-09</td></tr></tbody></table>
+      <tbody><tr><td class="num">#9</td><td>20 天内发布 2 篇新稿</td><td class="num">0.75</td><td class="muted">2026-11-25</td></tr><tr><td class="num">#10</td><td>45 天内拿到 offer</td><td class="num">0.45</td><td class="muted">2026-12-20</td></tr></tbody></table>
     </section>
   
     <section class="card">

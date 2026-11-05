@@ -63,6 +63,11 @@ class TestEndToEnd(unittest.TestCase):
         html = render_dashboard(conn)
         self.assertIn("<svg", html)
         self.assertIn("示例数据 · 虚构画像 · 只读", html)
+        self.assertIn("不是生活结果", html)
+        self.assertNotIn("系统性过度自信", html)
+        self.assertNotIn("校准良好", html)
+        self.assertNotIn("唯一外部可检验", html)
+        self.assertNotIn("实测发生过", html)
         self.assertRegex(
             html,
             r'<td class="num">0\.70</td><td class="num">0\.00</td>'

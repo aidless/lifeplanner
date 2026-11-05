@@ -127,8 +127,43 @@ class Policy:
 
     @classmethod
     def from_dict(cls, data: dict) -> "Policy":
-        known = {f for f in cls.__dataclass_fields__}
-        return cls(**{k: v for k, v in data.items() if k in known})
+        """只接受类型正确的字段。
+
+        非布尔值一律按「关闭」处理。`"allow_destructive": "false"` 在 Python
+        里是真值，若直接塞进 dataclass，会把破坏性门禁打开——这是假绿。
+        """
+        if not isinstance(data, dict):
+            return cls(
+                allow_observe=False,
+                allow_workspace_write=False,
+                allow_execute=False,
+                allow_destructive=False,
+                allow_shell_wrapper=False,
+            )
+        # 类型不对时用关闭，而不是 dataclass 的默认（默认会放行只读和工作区写入）。
+        closed = {
+            "allow_observe": False,
+            "allow_workspace_write": False,
+            "allow_execute": False,
+            "allow_destructive": False,
+            "allow_shell_wrapper": False,
+        }
+        clean: dict = {}
+        for key, fallback in closed.items():
+            if key not in data:
+                continue
+            value = data[key]
+            clean[key] = value if isinstance(value, bool) else fallback
+        jail = data.get("workspace_jail")
+        if isinstance(jail, list) and jail and all(isinstance(x, str) and x for x in jail):
+            clean["workspace_jail"] = jail
+        timeout = data.get("timeout_seconds")
+        if isinstance(timeout, int) and not isinstance(timeout, bool) and timeout > 0:
+            clean["timeout_seconds"] = timeout
+        cap = data.get("max_output_chars")
+        if isinstance(cap, int) and not isinstance(cap, bool) and cap > 0:
+            clean["max_output_chars"] = cap
+        return cls(**clean)
 
 
 def policy_path() -> Path:
@@ -137,13 +172,31 @@ def policy_path() -> Path:
     return home_dir() / DEFAULT_POLICY_FILE
 
 
+def _closed_policy() -> Policy:
+    """损坏的策略文件走这里：全部关闭，并且不把文件改写成默认策略。
+
+    默认策略会重新打开只读和工作区自动执行。静默覆盖会把「文件坏了」
+    显示成「门禁正常」。
+    """
+    return Policy(
+        allow_observe=False,
+        allow_workspace_write=False,
+        allow_execute=False,
+        allow_destructive=False,
+        allow_shell_wrapper=False,
+    )
+
+
 def load_policy(create: bool = True) -> Policy:
     path = policy_path()
     if path.exists():
         try:
-            return Policy.from_dict(json.loads(path.read_text(encoding="utf-8")))
-        except (json.JSONDecodeError, TypeError):
-            pass
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, TypeError, OSError):
+            return _closed_policy()
+        if not isinstance(data, dict):
+            return _closed_policy()
+        return Policy.from_dict(data)
     pol = Policy()
     if create:
         save_policy(pol)
@@ -180,6 +233,18 @@ class Verdict:
     @property
     def label(self) -> str:
         return TIER_LABEL.get(self.tier, f"未知({self.tier})")
+
+
+def _arg_paths(argv: list[str]) -> list[str]:
+    """命令参数里看起来像路径的项。选项（以 - 开头）跳过。"""
+    return [a for a in argv[1:] if a and not a.startswith("-")]
+
+
+def _path_inside(raw: str, cwd: str, roots: list[str]) -> bool:
+    candidate = Path(raw).expanduser()
+    if not candidate.is_absolute():
+        candidate = Path(cwd).expanduser() / candidate
+    return _is_inside(str(candidate), roots)
 
 
 def _is_inside(path: str, roots: list[str]) -> bool:
@@ -265,18 +330,25 @@ def classify(argv: list[str], cwd: str | None = None, pol: Policy | None = None)
             allowed=pol.allow_observe, requires_confirm=False,
         )
 
-    # 6) 工作区创建类：必须落在 jail 内
+    # 6) 工作区创建类：工作目录和路径参数都必须落在 jail 内。
+    #    只查 cwd 会假绿：在家目录里 `cp notes /tmp/out` 过去会被自动放行。
+    #    越界后必须确认，而且不能因为 allow_execute=true 变成自动执行。
     if binary in WORKSPACE_BIN:
         target = cwd or os.getcwd()
-        if _is_inside(target, pol.workspace_jail):
+        escaped = [
+            raw for raw in _arg_paths(argv)
+            if not _path_inside(raw, target, pol.workspace_jail)
+        ]
+        if _is_inside(target, pol.workspace_jail) and not escaped:
             return Verdict(
                 TIER_WORKSPACE,
                 f"{binary} 作用于工作区内 {target}",
                 allowed=pol.allow_workspace_write, requires_confirm=False,
             )
+        why = f"路径超出 workspace_jail：{escaped[:3]}" if escaped else f"工作目录在 jail 外 {target}"
         return Verdict(
             TIER_EXECUTE,
-            f"{binary} 作用于工作区外 {target}",
+            f"{binary} {why}。越界写入必须确认，allow_execute 不能把它变成自动执行",
             allowed=True, requires_confirm=True,
         )
 

@@ -1,14 +1,42 @@
-# 人生规划系统 · lifeplan
+# lifeplan
 
-> 万事万物皆可量化 —— 但不可核验的量化，只值一半分。
+<!-- problem:start -->
+人生规划工具通常把目标记成待办和总分，完成次数不能说明判断准不准。
+lifeplan 把目标写成可核验指标，把「我能不能做到」写成事前概率，到期用 Brier / ECE 对照账本里的结算。
+示例数据是虚构画像；这些分数只描述这本账，不是生活结果，也不能拿去和别人比。
+<!-- problem:end -->
 
-把抽象的人生目标变成**可核验的指标**，把主观的自我判断变成**可校准的预测**，
-并且持续审计这套量化机制本身有没有在骗你。
+<!-- honesty:test-count=203 -->
+<!-- honesty:python=3.10,3.13 -->
 
-零依赖、纯 Python 标准库、单文件 SQLite、单文件离线 HTML 看板。
-所有数据留在本地，不上传任何地方。
+零依赖、Python 标准库、单文件 SQLite、单文件离线 HTML 看板。数据默认留在本机。
 
-**在线体验：** [落地页](https://aidless.github.io/lifeplanner/) · [示例看板](https://aidless.github.io/lifeplanner/demo/dashboard.html)（示例数据为虚构画像，不是真实用户记录）
+**在线示例（虚构）：** [落地页](https://aidless.github.io/lifeplanner/) · [示例看板](https://aidless.github.io/lifeplanner/demo/dashboard.html)
+
+## 离线路径
+
+不装 Python、不联网也可以看数：用浏览器打开仓库里的 `landing/demo/dashboard.html`（`file://` 即可）。这个文件没有 CDN，数据是 `lifeplan/seed.py` 里的虚构画像。
+
+在本机重算，仍然不上传：
+
+```bash
+git clone https://github.com/aidless/lifeplanner.git
+cd lifeplanner
+make demo
+# 浏览器打开 /tmp/lifeplan-demo/dashboard.html
+```
+
+`make demo` 只写临时目录，不碰 `~/.lifeplan`。核心命令（`init` / `score` / `calibrate` / `audit` / `report` / `dashboard`）不发网络请求。解释器需要 Python 3.10+。`lifeplan setup` 读 TOML：3.11+ 用标准库 `tomllib`，3.10 需要 `tomli`；其余命令无第三方依赖。
+
+自己的账从空库开始：`python3 -m lifeplan init`（不要加 `--seed`）。可选的 `lifeplan agent` 只有在配置了本地或远程模型端点时才会打开套接字。
+
+## 和 aidless/life-planner 的关系
+
+[aidless/life-planner](https://github.com/aidless/life-planner) 是另一个仓库：FastAPI + React，可选 Claude API，模块很多，用 Docker Compose 启动。本仓库不调用它、不共享数据库、不把它的页面或分数当证据。两边都叫人生规划，机制不同：这里只做本地对账。life-planner 上的数字也不是本仓库的结果。
+
+## 读数边界
+
+Brier、ECE、过度自信度、价值分、证据置信度都不是生活过得好不好。结算的 0/1 由人填写，程序不核对外部世界。已结算预测少于 20 条时，界面不给出「校准良好」或「系统性过度自信」这类结论。细节见 [FAILURE_MODES.md](FAILURE_MODES.md)。
 
 ![lifeplan 示例看板](landing/assets/dashboard-desktop.png)
 
@@ -94,7 +122,7 @@ make demo        # 写入临时目录，不碰你的真实数据
 ```bash
 cd lifeplanner
 
-# 1. 初始化（--seed 写入一份贴近真实的示例数据）
+# 1. 初始化（--seed 写入虚构画像，不是任何人的记录）
 python3 -m lifeplan init --seed
 
 # 2. 看当前状态
@@ -155,7 +183,7 @@ python3 -m lifeplan unquantifiable add \
   --reason "互动次数与关系质量之间不存在稳定单调关系，高频低质互动反而可能造成负向代理偏差。"
 ```
 
-种子数据内置三个真实例子：职业长期意义感、亲密关系质量、认知能力的真实增长。
+种子数据里有三则虚构条目（职业长期意义感、亲密关系质量、认知能力的真实增长），用来说明登记区长什么样，不是真人案例。
 
 ---
 
@@ -191,7 +219,7 @@ python3 -m unittest discover -s tests -v
 
 诚实地说明这套系统做不到什么：
 
-1. **指标选错，量化越差。** 指标本身的选择错误无法被系统检测，这是最根本的失效模式。
+1. **指标选错，量化越差。** 指标本身的选择错误无法被系统检测，这是最根本的失效模式。误校准和权限门禁假绿见 [FAILURE_MODES.md](FAILURE_MODES.md)。
 2. **代理指标必然带偏。** 系统只能提示代理反噬，无法自动找到正确的替代指标。
 3. **校准需要样本量。** n < 10 时结论只是初步信号，报告会显式标注。
 4. **置信度衡量的是证据强度，不是真实度。** tier 3 也可能记录错误的内容。
@@ -267,14 +295,16 @@ lifeplan apps type "hello" / apps key ctrl+s / apps focus <id>
 lifeplan policy                    # 查看当前策略与分级含义
 ```
 
-### 本机实测能力（Ubuntu 24.04 / Wayland）
+### 某台 Ubuntu 24.04 / Wayland 机器上的一次观察
+
+下面不是 CI 结果，也不是每台机器的能力。`lifeplan host caps` 会按当前机器重新探测。2026-10 在一台没有 `xdotool` / `wmctrl` 的机器上看到：
 
 ```
 ✓ 启动应用      ✓ 枚举应用
 ✗ 枚举窗口      ✗ 聚焦窗口      ✗ 模拟输入      ✗ 发送按键      ✗ 截屏
 ```
 
-缺的是 `xdotool` / `wmctrl`。补全键鼠控制：
+要补窗口控制，需要自己安装：
 
 ```bash
 sudo apt install xdotool wmctrl
@@ -290,6 +320,7 @@ sudo apt install xdotool wmctrl
 2. **黑名单不是安全边界。** 任何解释器都是万能逃逸口（`python -c` / `node -e` 能做任何事），
    所以真正的边界是「分级 + 确认 + 审计」这三条，而不是命令过滤表。
    正因如此，解释器内联代码默认归入禁止级。
+   只检查工作目录、或把策略文件里的 `"false"` 字符串当成布尔，都会假绿。见 [FAILURE_MODES.md](FAILURE_MODES.md)。
 3. **不防提示注入。** 如果你让模型去读一个不可信的文件/网页，并据此让它执行命令，
    模型可能被诱导。对策是架构性的：**提案与执行分离**，任何副作用都要你亲手确认。
 4. **不做隐蔽操作。** 每个动作执行前就写入 `actions` 表，事后可查、可复盘；
@@ -308,7 +339,7 @@ sudo apt install xdotool wmctrl
   "allow_execute": false,        // 改成 true 则 tier2 免确认（不推荐）
   "allow_destructive": false,    // 改成 true 才可能执行 tier3，且仍需确认
   "allow_shell_wrapper": false,  // 改成 true 才允许 bash -c / python -c
-  "workspace_jail": ["/home/you"],
+  "workspace_jail": ["~"],
   "timeout_seconds": 30,
   "max_output_chars": 20000
 }
@@ -331,24 +362,12 @@ sudo apt install xdotool wmctrl
 | 适配器 | 说明 | 当前状态 |
 |---|---|---|
 | `jev-local` | 加载本地 Jev 检查点。**必须先通过健康检查**（探针损失 ≤ 3.5），否则拒绝使用 | ✗ 无检查点（已封存） |
-| `openai-compat` | OpenAI 兼容端点。**未配置时自动探测本机 Ollama**，按偏好选模型（3B 优先） | ✓ 本机实测可用 |
+| `openai-compat` | OpenAI 兼容端点。未配置时探测本机 Ollama，按偏好选模型（3B 优先） | 探测成功才可用；CI 不假设本机有 Ollama |
 | `scripted` | 确定性关键词路由，永远可用，不做推理 | ✓ 兜底 |
 
-自动发现的实测过程（本机无可用 GPU，纯 CPU 推理）：
+2026-10 在一台没有 GPU 的机器上，自动发现选过 `llama3.2:3b`（约 1–9 秒）并让 `qwen3:8b` 在 CPU 上超时。那是一次本地笔记，CI 不复跑，数字会过时。适配器只在端点真的列出该模型时才选用，不在就报错。
 
-```
-status: True
-detail: llama3.2:3b @ http://127.0.0.1:11434/v1｜自动发现本机 Ollama，
-        按偏好顺序选中 llama3.2:3b（共 28 个模型）
-```
-
-| 模型 | 实测 | 结论 |
-|---|---|---|
-| `llama3.2:3b` | 首次 8.8s（含 7s 加载），后续 ~1s | **可用，默认** |
-| `qwen3:8b` | 180s 超时 | CPU 上不现实，有 GPU 再用 |
-
-用 `LIFEPLAN_LLM_MODEL` / `LIFEPLAN_LLM_BASE_URL` 覆盖即可，适配器会校验模型
-确实在端点列表里，不在就如实报错而不是硬调。
+用 `LIFEPLAN_LLM_MODEL` / `LIFEPLAN_LLM_BASE_URL` 覆盖即可。
 
 `lifeplan agent doctor` 会如实告诉你当前用哪个、其余为什么不可用。
 
@@ -417,44 +436,24 @@ export LIFEPLAN_LLM_MODEL=qwen3:8b
 lifeplan agent ask 我对自己判断准不准
 ```
 
-**当前的真实状态**：agent 已由本机 Ollama 的 `llama3.2:3b` 驱动（自动发现，
-无需配置）。实测一次问答约 30s（CPU 推理），答复经过数字追溯核验，
-且**数据附录保证工具结果原文在场**——3B 模型常给出空泛的总结句，
-但数字不会再丢：
-
-```
-系统性过度自信可能导致判断准不准，需要谨慎
-
-依据（1 次工具调用）：
-  【1】plan_calibration → 系统性过度自信：说'能做到'时更容易做不到
-
-数据附录：
-【1】plan_calibration
-    系统性过度自信：说'能做到'时更容易做不到
-    Brier 0.2270，ECE 0.3800，过度自信度 +0.1600，样本 n=10
-```
-
-设计原则：**模型负责解读，数据由系统保证在场。** 模型说得空泛没关系，
-数字必须出现在答复里，且每个都要能追溯到工具调用。
+仓库不绑定某一台机器上的模型。没有端点时走 `scripted` 兜底。种子库上的校准问答见 `examples/agent_demo.md`：n=8 时结论文案是「样本不足」，不是「系统性过度自信」。模型可以写得很空，数字必须出现在答复里，且每个都要能追溯到工具调用。
 
 ## 自动化
 
-已建一个每周一的定时任务（09:30）：
+仓库里没有安装 cron 或 systemd 定时器。下面是一条建议的周一清单，需要你自己挂到调度器上；本仓库不会代为安装。
 
 1. `lifeplan doctor`（未初始化则 `lifeplan init`，**不带 --seed**）
 2. `lifeplan week --plan-only` + `lifeplan act tick`
 3. `lifeplan agent ask 有没有自欺`
 4. 汇总清单条数、待确认提议、校准状态
 
-它只**提醒与汇报**，不代填数据、不确认提案——那两步永远留给人。
+它只适合**提醒与汇报**。代填数据和确认提案这两步留在人手里。
 
 ---
 
 ## 每周复盘（推荐入口）
 
-设计依据来自实测：库里 25 条观测**全部来自种子数据**，真实观测为 0。
-说明「按指标逐个记录」的交互方式在实践中不成立——不是时间不够，是打断太多
-（按种子周期算约 14.9 次/周）。
+交互从「逐条指标」改成「一周一次」，记录在 2026-10-22 的设计笔记里（`docs/OPTIMIZATION.md`）：当时那份自用库的观测全部来自种子。那是一次设计笔记，不是用户研究，也不是生活结果。按种子周期粗算，逐条记录大约一周十几次打断。
 
 所以把交互单位从「指标」改成「周」：
 
@@ -470,12 +469,7 @@ lifeplan week --limit 6    # 只处理 6 项（默认 12）
 可自动推断的指标会给建议值（例如「月度有效提交数」由近 7 天 git 提交数推算），
 回车即接受。推不出来的（睡眠、面试、关系）不做假推断：那会污染台账，比没有数据更糟。
 
-跑完立刻回读一次校准结果，让「这次输入换来了什么」当场可见：
-
-```
-✓ 已结算预测 2 条、补记观测 4 条、归档指标 1 个、跳过 2 项
-  当前校准：Brier 0.2270，ECE 0.3800，过度自信 +0.1600（n=10）
-```
+跑完会回读一次校准。输出里有结算条数和当前结论文案。样本不足时，这行是「样本不足」，不是对人的判断。仓库不保留某一次真实复盘的数字。
 
 归档是降级而不是删除：指标不再参与评分与提醒，数据保留，随时可恢复。
 
@@ -490,8 +484,7 @@ lifeplan restore --from ~/lifeplan-backup.db --force
 
 `restore` 的行为：先校验备份文件表结构完整 → 自动把当前库另存为
 `.pre-restore-<时间戳>.db` → 再覆盖。不带 `--force` 会直接拒绝。
-
-已实际演练：清空观测 → 分数归零 → 恢复 → 分数回到原值、29 条观测完整。
+仓库里没有一份可复现的「恢复后多少条观测」基准文件；行为以 `tests/` 为准。
 
 ## 优化诊断
 
@@ -504,7 +497,7 @@ lifeplan restore --from ~/lifeplan-backup.db --force
 ## 工程化
 
 ```bash
-make test        # 190 项测试
+make test        # 条数见文首 honesty:test-count，由 tests/test_honesty.py 核对
 make check       # 语法检查 + 死代码扫描
 make demo        # 临时目录跑完整流程
 make report      # 生成 examples/report.md
@@ -519,14 +512,15 @@ make doctor      # 系统体检
 最后备份时间、agent 当前驱动。
 
 ```
-数据库　/home/you/.lifeplan/lifeplan.db
-  大小 100 KB　|　schema 版本 2（当前 2） ✓
-观测来源：非周复盘 25 条，周复盘补录 4 条
-  ⚠ 本库含种子数据（2026-10-22 导入），上述计数包含演示记录，不是真实使用量
+数据库　~/.lifeplan/lifeplan.db
+  schema 版本与代码一致时标 ✓，否则标需迁移
+观测来源会分开计数
+  ⚠ 若本库含种子数据，计数包含演示记录，不是真实使用量
 ```
 
-CI 在 `.github/workflows/ci.yml`：纯标准库，无需 pip install，
-Python 3.10 / 3.13 双版本跑测试 + 端到端冒烟。
+CI 在 `.github/workflows/ci.yml`：纯标准库，无需 pip install。
+Python 版本见文首 `honesty:python`（当前 3.10 与 3.13），跑测试和端到端冒烟。
+Pages 构建使用其中的一个版本。另有一份 workflow 会让矩阵分叉，所以仓库里不再放第二份测试 workflow。
 
 ## 报告结构（2026-10-22 调整）
 
@@ -539,18 +533,10 @@ Python 3.10 / 3.13 双版本跑测试 + 端到端冒烟。
 六、不可量化登记   七、自我审计   附、宿主画像
 ```
 
-理由见 `docs/OPTIMIZATION.md` §7.2：填完一周数据后价值分从 0.292 跳到 0.725，
-唯一原因是一次超额提交打满了 `target=12` —— 而 target 是人拍的。
-价值分只能自比，校准的判据在系统外部，所以校准才是主指标。
-
-可靠性分箱比总分有用得多，例如：
-
-| 预测区间 | n | 平均预测 | 实际命中 | 偏差 |
-|---|---|---|---|---|
-| 0.5–0.6 | 3 | 0.53 | 0.00 | −0.53 |
-| 0.7–0.8 | 3 | 0.70 | 0.33 | −0.37 |
-
-「说到五成把握的事，一件都没做到」——这条信息在原来的总分里完全看不见。
+价值分的 baseline / target 由人填写，同一组观测改一下 target，分数就会跳，所以它只能自比。
+校准比较事前概率和账本里的 0/1，所以排在前面。它仍然不是生活结果。
+虚构种子的分箱在示例看板里（每格 n=2）。样本不够时，这些格子不能读成对一个人的结论。
+设计笔记见 `docs/OPTIMIZATION.md` §7.2，假绿见 `FAILURE_MODES.md`。
 
 ---
 
@@ -640,6 +626,8 @@ v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并�
 ```
 
 ### 已交付的文档资产
+
+勾表示仓库里有这份文件，不表示研究问题已经被数据回答，也不表示有人用这套账生活过。
 
 | 文件 | 内容 | 阶段 |
 |---|---|---|
