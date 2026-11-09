@@ -1,5 +1,7 @@
 # 人生规划系统 · lifeplan
 
+[![CI](https://github.com/aidless/lifeplanner/actions/workflows/checks.yml/badge.svg)](https://github.com/aidless/lifeplanner/actions/workflows/checks.yml)
+
 > 万事万物皆可量化 —— 但不可核验的量化，只值一半分。
 
 把抽象的人生目标变成**可核验的指标**，把主观的自我判断变成**可校准的预测**，
