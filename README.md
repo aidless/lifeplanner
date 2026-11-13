@@ -1,5 +1,9 @@
 # 人生规划系统 · lifeplan
 
+[![CI](https://github.com/aidless/lifeplanner/actions/workflows/checks.yml/badge.svg)](https://github.com/aidless/lifeplanner/actions/workflows/checks.yml)
+
+> 🗂 **仓库族谱**：「人生规划」主线仓是 [life-planner](https://github.com/aidless/life-planner)（FastAPI + React 全栈四场景）；本仓定位是量化看板方向——不可核验的量化只值一半分。
+
 > 万事万物皆可量化 —— 但不可核验的量化，只值一半分。
 
 把抽象的人生目标变成**可核验的指标**，把主观的自我判断变成**可校准的预测**，
