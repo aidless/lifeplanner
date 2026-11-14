@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from .calibration import compute_calibration, load_predictions, due_predictions
-from .db import connect, db_path, init_db, is_initialized, log_event, recent_events, rows, utc_now
+from .db import connect, init_db, is_initialized, log_event, recent_events, rows, utc_now
 from .evidence import infer_tier, tier_label
 from .metrics import build_snapshot
 
@@ -518,7 +518,7 @@ def cmd_term(args) -> None:
 
     if res.status == "blocked":
         print(f"\n⏸ 已暂缓（{res.reason}）\n")
-        print(f"  确认执行请回填令牌：")
+        print("  确认执行请回填令牌：")
         print(f"    lifeplan act run {res.action_id} --confirm-token {res.token}")
         print(f"  或直接：lifeplan term run --confirm-token {res.token} -- {argv[0]} …")
         print()
@@ -570,7 +570,7 @@ def cmd_apps(args) -> None:
             print()
             return
         if res.status == "blocked":
-            print(f"⏸ 启动应用属于 tier2（有外部影响），需确认：")
+            print("⏸ 启动应用属于 tier2（有外部影响），需确认：")
             print(f"   lifeplan act run {res.action_id} --confirm-token {res.token}")
         elif res.ok:
             print("✓ 已启动")
@@ -635,7 +635,7 @@ def cmd_act(args) -> None:
 
     if item["kind"] in ("observe", "resolve", "review", "goal"):
         # 这类提议需要人来填数值/做判断，系统不代为决定
-        print(f"\n这类提议需要你补数据，系统不代为决定：\n")
+        print("\n这类提议需要你补数据，系统不代为决定：\n")
         print(f"  {item['rationale']}\n")
         print(f"  建议命令：{item['command']}\n")
         return
@@ -700,7 +700,6 @@ def cmd_week(args) -> None:
 
 def cmd_backup(args) -> None:
     """用 SQLite 在线备份 API，避免直接拷文件遇到 WAL 不一致。"""
-    from .db import db_path
 
     src = _open()
     out = Path(args.out).expanduser() if args.out else (
@@ -986,7 +985,6 @@ def cmd_policy(args) -> None:
 # ── 专属 agent ──────────────────────────────────────────────
 def cmd_agent(args) -> None:
     from .agent import answer, available_adapters, tool_catalog
-    from .policy import TIER_LABEL
 
     if args.agent_action == "tools":
         items = tool_catalog()

@@ -5,14 +5,12 @@ from __future__ import annotations
 import os
 import tempfile
 import unittest
-from datetime import date
 
 from lifeplan.db import connect, init_db
 from lifeplan.calibration import compute_calibration, load_predictions
 from lifeplan.dashboard import render_dashboard
 from lifeplan.metrics import build_snapshot
 from lifeplan.report import render_report
-from lifeplan.seed import seed_all
 
 
 class TestEndToEnd(unittest.TestCase):

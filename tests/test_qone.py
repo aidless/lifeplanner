@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import tempfile
 import unittest
@@ -22,7 +21,7 @@ from lifeplan.ledger import (
     sha256_of,
     verify_integrity,
 )
-from lifeplan.qone import QOneAnswer, ask, qcompile
+from lifeplan.qone import ask, qcompile
 
 
 class TestCalcSafety(unittest.TestCase):
@@ -246,7 +245,6 @@ class TestRootTypeContract(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_str_root_is_accepted_and_converted(self):
-        from pathlib import Path
 
         ans = ask("这个项目是否值得继续投入", self.conn, root=str(self.tmp.name))
         git_items = [e for e in ans.evidence if e.get("kind") == "git"]

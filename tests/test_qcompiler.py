@@ -14,7 +14,6 @@ import unittest
 
 from lifeplan.qcompiler import (
     ALLOWED_EXTRA_TYPES,
-    SIGNAL_REGISTRY,
     _extract_json,
     compile_with_llm,
     validate_plan,

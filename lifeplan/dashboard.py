@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import html
-import json
 from datetime import date
 
 from .calibration import compute_calibration, load_predictions
@@ -207,7 +206,7 @@ def render_dashboard(conn, as_of: str | None = None) -> str:
                     "no_data": ("无观测", PALETTE["muted"]),
                 }.get(m.status, ("—", PALETTE["muted"]))
                 proxy_tag = (
-                    f'<span class="tag proxy">代理</span>' if m.metric.is_proxy else ""
+                    '<span class="tag proxy">代理</span>' if m.metric.is_proxy else ""
                 )
                 cur = f"{m.value:g}{m.metric.unit}" if m.value is not None else "—"
                 metric_rows.append(f"""

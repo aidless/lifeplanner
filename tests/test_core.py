@@ -8,8 +8,6 @@
 
 from __future__ import annotations
 
-import os
-import tempfile
 import unittest
 
 from lifeplan.calibration import Prediction, compute_calibration

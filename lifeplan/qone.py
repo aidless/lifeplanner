@@ -17,7 +17,6 @@ v1 垂直域：**项目投入决策**（「这个项目是否值得继续投入�
 
 from __future__ import annotations
 
-import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from pathlib import Path

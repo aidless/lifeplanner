@@ -20,10 +20,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from .db import connect, rows, utc_now
+from .db import connect, rows
 from .metrics import build_snapshot
 from .presence import HostProfile, build_profile, load_latest, save_profile
-from .terminal import list_actions, _record
+from .terminal import _record
 
 
 @dataclass

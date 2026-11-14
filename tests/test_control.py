@@ -22,7 +22,6 @@ from lifeplan.policy import (
     TIER_OBSERVE,
     classify,
     confirm_token,
-    load_policy,
     save_policy,
 )
 from lifeplan.presence import (

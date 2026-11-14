@@ -144,8 +144,8 @@ def audit_proxy_capture(conn) -> list[Finding]:
                 ),
                 entity=f"goal#{g['id']}",
                 suggestion=(
-                    f"把代理指标降级为参考项（--proxy 保留但权重调低），"
-                    f"并在主指标上加一条观测频率约束，强制回到结果本身。"
+                    "把代理指标降级为参考项（--proxy 保留但权重调低），"
+                    "并在主指标上加一条观测频率约束，强制回到结果本身。"
                 ),
             ))
     return out
