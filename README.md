@@ -672,3 +672,36 @@ v1 只覆盖**项目投入决策**一个垂直域，其余问题显式拒绝并�
 
 1. **不建立代表「人生好坏」的单一总分**（多维并列 + 置信度标注）
 2. **模型不绕过人的最终决定权**（tier≥2 行动必须人工确认令牌）
+
+## 验收题库与复算
+
+`eval/cases.jsonl` 是 20 条可执行验收题（18 条 `expr`/`raises`，2 条 `doc`），
+覆盖 14 个轴：进展归一化三种方向（`metrics/goal_progress`）、证据门槛差折减
+（`evidence/reduction`）、AST 白名单求值与自助法区间（`calc/*`）、Brier 与校准裁决
+（`calibration/brier`）、命令分级（`policy/tier`）、量化编译器的注册表边界
+（`qcompiler/registry`）、从 `lifeplan/schema.sql` 建库后的快照聚合（`metrics/snapshot`）、
+周复盘清单上限（`weekly/limit`）、代理反噬审计（`audit/proxy-capture`）、
+答复数字可追溯（`agent/verify`）、`tests/` 的 test 函数条数（`tests/count`），
+以及 README 自述的两条阈值（`docs/*`）。
+
+期望值不是抄文档，而是**现算**：`expr` 题的 `verify` 真调本仓库 API，
+或用 `sqlite3` + `lifeplan/schema.sql` 建内存库后跑 `build_snapshot` / `build_week` /
+`audit_proxy_capture`；`tests/count` 用 `ast` 数 `tests/test_*.py` 里的 `test_` 函数，
+与 README「`make test` # 190 项测试」对齐。改一行实现就可能让对应题变红——这正是它的用途。
+
+```bash
+python3 eval/run_cases.py            # 20/20 cases passed，退出码 0
+python3 eval/run_cases.py --save     # 顺带把结果写进 eval/run-report.json
+python3 eval/run_cases.py --selftest # 篡改一条期望值，必须变红（19/20，证明这套题会失败）
+```
+
+退出码：`0` 全过；`1` 有 case 失败；`2` 题库本身有问题（读不了 / 缺字段 / 重复 id）；
+`--selftest` 下若仍全绿则返回 `3`——「只会绿」的题库等于装饰。
+
+**数字如何复算**：`eval/run-report.json` 里每条 case 都带 `id` / `axis` / `detail`，
+把 `detail` 与 `cases.jsonl` 的 `verify` 代码一起看，就能从源码复现该数字；
+`--save` 重跑一次即重建整份报告，不需要手工抄数。快照类题目里的库是内存库
+（`sqlite3.connect(":memory:")` + 真实 `schema.sql`），不触碰 `~/.lifeplan`。
+
+**失败归因**：`run_cases.py` 不只报通过率，失败时按 `axis` 汇总（例如
+`metrics/goal_progress: 1 条 —— LP-01`），直接指出是哪个模块的哪个口径坏了。

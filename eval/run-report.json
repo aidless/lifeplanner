@@ -1,0 +1,129 @@
+{
+ "total": 20,
+ "passed": 20,
+ "failed": 0,
+ "selftest": false,
+ "failed_by_axis": {},
+ "results": [
+  {
+   "id": "LP-01",
+   "axis": "metrics/goal_progress",
+   "ok": true,
+   "detail": "0.5"
+  },
+  {
+   "id": "LP-02",
+   "axis": "metrics/goal_progress",
+   "ok": true,
+   "detail": "0.75"
+  },
+  {
+   "id": "LP-03",
+   "axis": "metrics/goal_progress",
+   "ok": true,
+   "detail": "0.75"
+  },
+  {
+   "id": "LP-04",
+   "axis": "evidence/reduction",
+   "ok": true,
+   "detail": "0.6975"
+  },
+  {
+   "id": "LP-05",
+   "axis": "calc/sandbox",
+   "ok": true,
+   "detail": "3.0"
+  },
+  {
+   "id": "LP-06",
+   "axis": "calc/sandbox",
+   "ok": true,
+   "detail": "raised CalcError"
+  },
+  {
+   "id": "LP-07",
+   "axis": "calc/bootstrap",
+   "ok": true,
+   "detail": "0.36"
+  },
+  {
+   "id": "LP-08",
+   "axis": "calibration/brier",
+   "ok": true,
+   "detail": "0.175"
+  },
+  {
+   "id": "LP-09",
+   "axis": "calibration/brier",
+   "ok": true,
+   "detail": "系统性过度自信"
+  },
+  {
+   "id": "LP-10",
+   "axis": "policy/tier",
+   "ok": true,
+   "detail": "4"
+  },
+  {
+   "id": "LP-11",
+   "axis": "policy/tier",
+   "ok": true,
+   "detail": "3"
+  },
+  {
+   "id": "LP-12",
+   "axis": "qcompiler/registry",
+   "ok": true,
+   "detail": "extra_questions 最多 3 个"
+  },
+  {
+   "id": "LP-13",
+   "axis": "metrics/snapshot",
+   "ok": true,
+   "detail": "0.5625"
+  },
+  {
+   "id": "LP-14",
+   "axis": "metrics/snapshot",
+   "ok": true,
+   "detail": "0.666667"
+  },
+  {
+   "id": "LP-15",
+   "axis": "weekly/limit",
+   "ok": true,
+   "detail": "3"
+  },
+  {
+   "id": "LP-16",
+   "axis": "audit/proxy-capture",
+   "ok": true,
+   "detail": "1:proxy_capture"
+  },
+  {
+   "id": "LP-17",
+   "axis": "agent/verify",
+   "ok": true,
+   "detail": "0.31,1200"
+  },
+  {
+   "id": "LP-18",
+   "axis": "tests/count",
+   "ok": true,
+   "detail": "190"
+  },
+  {
+   "id": "LP-19",
+   "axis": "docs/evidence-tiers",
+   "ok": true,
+   "detail": "| 3 | 可核验 | 1.00"
+  },
+  {
+   "id": "LP-20",
+   "axis": "docs/proxy-capture",
+   "ok": true,
+   "detail": "代理指标达成 ≥75% 而主指标 <40%"
+  }
+ ]
+}
